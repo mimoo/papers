@@ -1,0 +1,1085 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kimi K3 — an annotated reading</title>
+<style>
+  :root{
+    --paper:#f3f5f7;
+    --paper-edge:#e2e7ec;
+    --ink:#141b24;
+    --ink-soft:#4a5661;
+    --ink-faint:#7d8894;
+    --field:#0e1620;
+    --card:#18232f;
+    --card-2:#1e2b39;
+    --rule:#2b3a49;
+    --teal:#0d7a75;
+    --teal-lite:#7fd8d2;
+    --amber:#e0a03a;
+    --lime:#d9f24b;
+    --serif: "Iowan Old Style","Palatino Linotype",Palatino,Charter,Georgia,"Times New Roman",serif;
+    --sans: ui-sans-serif,-apple-system,"Segoe UI",Inter,Roboto,"Helvetica Neue",Arial,sans-serif;
+    --mono: ui-monospace,"SF Mono","JetBrains Mono","Roboto Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;background:var(--field);color:var(--ink);
+    font-family:var(--serif);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:fixed;inset:0 0 auto 0;height:52px;z-index:40;
+    display:flex;align-items:center;gap:18px;
+    padding:0 20px;background:#0a1017;border-bottom:1px solid var(--rule);
+  }
+  .mark{
+    font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--lime);
+  }
+  .mark b{color:#fff;font-weight:600}
+  .topbar .sub{
+    font-family:var(--mono);font-size:11px;color:#6b7a89;letter-spacing:.04em;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .topbar .spacer{flex:1}
+  .btn{
+    font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    color:#9fb0c0;background:transparent;border:1px solid var(--rule);border-radius:2px;
+    padding:6px 10px;cursor:pointer;
+  }
+  .btn:hover{color:#fff;border-color:#4a5f74}
+  .btn:focus-visible,.ref:focus-visible,.card-close:focus-visible,.crumb:focus-visible{
+    outline:2px solid var(--lime);outline-offset:2px;
+  }
+
+  /* ---------- layout ---------- */
+  .layout{
+    display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    height:100%;padding-top:52px;
+  }
+  @media (min-width:1500px){ .layout{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr)} }
+
+  /* ---------- paper column ---------- */
+  .paper{
+    background:var(--paper);overflow-y:auto;border-right:1px solid #000;
+    padding:56px 0 40vh;
+  }
+  .paper-inner{max-width:660px;margin:0 auto;padding:0 40px}
+
+  .eyebrow{
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--teal);margin:0 0 14px;
+  }
+  .paper h1{
+    font-size:clamp(30px,4.2vw,46px);line-height:1.04;margin:0 0 10px;font-weight:600;
+    letter-spacing:-.015em;
+  }
+  .dek{font-size:17px;line-height:1.5;color:var(--ink-soft);margin:0 0 22px}
+  .meta{
+    font-family:var(--mono);font-size:11px;color:var(--ink-faint);line-height:1.9;
+    border-top:1px solid var(--paper-edge);border-bottom:1px solid var(--paper-edge);
+    padding:12px 0;margin:0 0 34px;
+  }
+  .paper h2{
+    font-family:var(--sans);font-size:13px;font-weight:650;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--ink);margin:52px 0 6px;
+    padding-top:14px;border-top:2px solid var(--ink);
+  }
+  .paper h2 .num{color:var(--teal);margin-right:10px;font-family:var(--mono);font-weight:500}
+  .paper h3{
+    font-family:var(--sans);font-size:14.5px;font-weight:640;letter-spacing:-.005em;
+    margin:30px 0 6px;color:var(--ink);
+  }
+  .paper p{font-size:16.5px;line-height:1.62;margin:0 0 14px;color:#1d2731}
+  .paper ul{margin:0 0 16px;padding-left:20px}
+  .paper li{font-size:16px;line-height:1.55;margin-bottom:7px}
+  .lede{font-size:18px;line-height:1.55}
+  .lede::first-letter{
+    float:left;font-size:52px;line-height:.82;padding:4px 8px 0 0;font-weight:600;color:var(--teal);
+  }
+
+  .pull{
+    border-left:3px solid var(--teal);background:#e9eef1;
+    padding:14px 16px;margin:20px 0;font-family:var(--sans);font-size:14px;line-height:1.55;
+    color:#22303b;
+  }
+  .pull b{font-family:var(--mono);font-size:12.5px;letter-spacing:.06em}
+
+  table.arch{
+    width:100%;border-collapse:collapse;margin:18px 0 24px;
+    font-family:var(--mono);font-size:11.5px;
+  }
+  table.arch th{
+    text-align:left;padding:7px 8px;border-bottom:2px solid var(--ink);
+    letter-spacing:.06em;text-transform:uppercase;font-size:10px;color:var(--ink-soft);
+  }
+  table.arch td{padding:6px 8px;border-bottom:1px solid var(--paper-edge)}
+  table.arch td:first-child{font-family:var(--sans);font-size:12.5px}
+  table.arch td.k3{color:var(--teal);font-weight:600}
+
+  .fig{
+    border:1px solid var(--paper-edge);background:#e9eef1;padding:16px;margin:20px 0;
+    font-family:var(--mono);font-size:11.5px;line-height:1.75;color:#2b3843;white-space:pre;
+    overflow-x:auto;
+  }
+  .fig .cap{
+    font-family:var(--sans);white-space:normal;font-size:12px;color:var(--ink-faint);
+    display:block;margin-top:12px;line-height:1.5;
+  }
+
+  .end{
+    margin-top:56px;padding-top:18px;border-top:2px solid var(--ink);
+    font-family:var(--mono);font-size:11px;color:var(--ink-faint);line-height:1.7;
+  }
+
+  /* ---------- the reference marks (the signature) ---------- */
+  .ref{
+    cursor:pointer;color:inherit;background:none;border:0;padding:0;font:inherit;
+    text-decoration:none;
+    box-shadow:inset 0 -2px 0 rgba(13,122,117,.42);
+    transition:box-shadow .12s ease,background .12s ease;
+  }
+  .ref:hover{box-shadow:inset 0 -6px 0 rgba(13,122,117,.22), inset 0 -2px 0 rgba(13,122,117,.9)}
+  .ref.on{background:rgba(13,122,117,.13);box-shadow:inset 0 -2px 0 var(--teal)}
+  .ref::after{
+    content:"›";font-family:var(--mono);font-size:.72em;color:var(--teal);
+    vertical-align:super;margin-left:1px;opacity:.6;
+  }
+
+  /* ---------- note stack ---------- */
+  .stack{
+    background:var(--field);overflow-y:auto;position:relative;
+    padding:0 0 40vh;
+  }
+  .trail{
+    position:sticky;top:0;z-index:12;background:rgba(14,22,32,.94);
+    backdrop-filter:blur(6px);border-bottom:1px solid var(--rule);
+    padding:11px 24px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;
+  }
+  .trail:empty{display:none}
+  .crumb{
+    background:none;border:0;padding:2px 4px;cursor:pointer;color:#7e90a1;
+    font:inherit;text-transform:uppercase;
+  }
+  .crumb:hover{color:#fff}
+  .crumb.last{color:var(--lime)}
+  .trail .sep{color:#3d4c5b}
+
+  .stack-inner{padding:26px 24px 0}
+
+  .empty{
+    max-width:420px;margin:14vh auto 0;text-align:left;
+    font-family:var(--sans);color:#8494a3;font-size:14px;line-height:1.65;
+  }
+  .empty h4{
+    font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--lime);margin:0 0 14px;font-weight:500;
+  }
+  .empty p{margin:0 0 12px}
+  .empty .swatch{
+    display:inline-block;box-shadow:inset 0 -2px 0 var(--teal-lite);color:#cdd8e2;
+  }
+
+  .card{
+    position:relative;background:var(--card);border:1px solid var(--rule);
+    border-radius:3px;margin:0 0 16px;
+    font-family:var(--sans);color:#c9d5e0;
+    animation:rise .18s ease-out;
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){ .card{animation:none} }
+
+  .card .depth-rail{
+    position:absolute;left:-24px;top:0;bottom:0;width:24px;
+  }
+  .card .depth-rail i{
+    position:absolute;left:11px;top:22px;width:1px;bottom:-16px;background:var(--rule);
+  }
+  .card:last-child .depth-rail i{display:none}
+  .card .depth-rail b{
+    position:absolute;left:6px;top:18px;width:11px;height:11px;border-radius:50%;
+    background:var(--field);border:1px solid var(--teal);
+  }
+  .card:last-child .depth-rail b{background:var(--lime);border-color:var(--lime)}
+
+  .card-head{
+    display:flex;align-items:flex-start;gap:12px;padding:14px 16px 10px;
+    border-bottom:1px solid rgba(255,255,255,.06);
+  }
+  .card-head .lvl{
+    font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:#5d7186;
+    padding-top:4px;flex:0 0 auto;
+  }
+  .card-head h3{
+    margin:0;font-size:16px;line-height:1.25;font-weight:640;color:#fff;letter-spacing:-.01em;flex:1;
+  }
+  .card-head .kicker{
+    display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--amber);margin-bottom:5px;font-weight:400;
+  }
+  .card-close{
+    background:none;border:0;color:#5d7186;font-family:var(--mono);font-size:15px;
+    cursor:pointer;line-height:1;padding:3px 4px;flex:0 0 auto;
+  }
+  .card-close:hover{color:#fff}
+
+  .card-body{padding:13px 16px 16px;font-size:14.2px;line-height:1.62}
+  .card-body p{margin:0 0 11px}
+  .card-body p:last-child{margin-bottom:0}
+  .card-body ul{margin:0 0 11px;padding-left:17px}
+  .card-body li{margin-bottom:6px}
+  .card-body b,.card-body strong{color:#eef3f8;font-weight:620}
+  .card-body code,.card-body .m{
+    font-family:var(--mono);font-size:12.5px;color:var(--teal-lite);
+    background:rgba(127,216,210,.08);padding:1px 4px;border-radius:2px;
+  }
+  .card-body .eq{
+    display:block;font-family:var(--mono);font-size:12.5px;color:#dfe8f0;
+    background:#111a24;border-left:2px solid var(--teal);
+    padding:10px 12px;margin:12px 0;overflow-x:auto;line-height:1.65;
+  }
+  .card-body .aside{
+    border-top:1px solid rgba(255,255,255,.07);margin-top:13px;padding-top:11px;
+    font-size:13px;color:#8ea0b1;
+  }
+  .card-body .aside .tag{
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--amber);display:block;margin-bottom:5px;
+  }
+  .card-body .ref{
+    box-shadow:inset 0 -1px 0 rgba(224,160,58,.5);color:#f0e0c2;
+  }
+  .card-body .ref:hover{box-shadow:inset 0 -5px 0 rgba(224,160,58,.16),inset 0 -1px 0 var(--amber)}
+  .card-body .ref.on{background:rgba(224,160,58,.14);box-shadow:inset 0 -1px 0 var(--amber)}
+  .card-body .ref::after{color:var(--amber)}
+
+  /* telescoping indent: depth is visible */
+  .card[data-d="1"]{margin-left:0}
+  .card[data-d="2"]{margin-left:14px}
+  .card[data-d="3"]{margin-left:28px}
+  .card[data-d="4"]{margin-left:42px}
+  .card[data-d="5"]{margin-left:52px}
+  .card[data-d="6"]{margin-left:60px}
+  .card[data-d="7"]{margin-left:66px}
+
+  /* ---------- mobile ---------- */
+  .sheet-bar{display:none}
+  @media (max-width:900px){
+    .layout{grid-template-columns:1fr}
+    .paper{border-right:0}
+    .paper-inner{padding:0 22px}
+    .stack{
+      position:fixed;inset:52px 0 0 0;z-index:30;transform:translateY(101%);
+      transition:transform .2s ease;border-top:1px solid var(--rule);
+    }
+    .stack.open{transform:none}
+    @media (prefers-reduced-motion:reduce){ .stack{transition:none} }
+    .sheet-bar{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      padding:10px 18px;border-bottom:1px solid var(--rule);background:#0a1017;
+      position:sticky;top:0;z-index:14;
+    }
+    .sheet-bar span{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#6b7a89}
+    .stack-inner{padding:20px 18px 0}
+    .card[data-d]{margin-left:0}
+    .card .depth-rail{display:none}
+    .trail{padding:9px 18px}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="mark"><b>KIMI K3</b> / annotated</div>
+  <div class="sub">click any underlined phrase — explanations stack on the right, and they link onward</div>
+  <div class="spacer"></div>
+  <button class="btn" id="clearBtn" type="button">Clear stack</button>
+</header>
+
+<main class="layout">
+
+<!-- ============================ PAPER ============================ -->
+<article class="paper" id="paper">
+<div class="paper-inner">
+
+  <p class="eyebrow">Technical report · Moonshot AI · July 2026</p>
+  <h1>Kimi K3: Open Frontier Intelligence</h1>
+  <p class="dek">A 2.8-trillion-parameter <span class="ref" data-note="moe">Mixture-of-Experts</span> model with native vision and a <span class="ref" data-note="context">one-million-token context window</span> — read here with the machinery unpacked.</p>
+  <div class="meta">
+    total parameters &nbsp;2.78T &nbsp;·&nbsp; <span class="ref" data-note="active-params">activated per token</span> &nbsp;104.2B<br>
+    layers &nbsp;93 &nbsp;·&nbsp; routed experts &nbsp;896, 16 active &nbsp;·&nbsp; context &nbsp;1M tokens<br>
+    weights released &nbsp;<span class="ref" data-note="open-weights">open</span> &nbsp;·&nbsp; claim &nbsp;first open 3T-class model
+  </div>
+
+  <h2><span class="num">00</span>Abstract</h2>
+  <p class="lede">Kimi K3 is built on two architectural ideas that carry most of the paper: <span class="ref" data-note="kda">Kimi Delta Attention</span>, which changes how information moves along the sequence, and <span class="ref" data-note="attnres">Attention Residuals</span>, which changes how it moves through depth. Together with <span class="ref" data-note="latentmoe">Stable LatentMoE</span> — 16 of 896 routed experts firing per token — and refined data recipes, the team reports roughly a <span class="ref" data-note="scaling-law">2.5× improvement in scaling efficiency</span> over Kimi K2.</p>
+  <p>Post-training is <span class="ref" data-note="rl">reinforcement learning</span> across general, agentic and coding domains at several <span class="ref" data-note="effort">reasoning-effort levels</span>, consolidated into one model by <span class="ref" data-note="mopd">multi-teacher on-policy distillation</span>. On the benchmark suite, K3 trails Claude Fable 5 and GPT-5.6 Sol overall while beating every other model tested, open or proprietary.</p>
+
+  <h2><span class="num">01</span>Introduction: two axes</h2>
+  <p>The framing of the paper is that scaling now has two axes. The first is the old one: more compute before deployment, bigger models on more data — <span class="ref" data-note="scaling-law">scaling laws</span>. The second is <span class="ref" data-note="test-time">test-time compute</span>: reasoning models that spend tokens thinking, call tools in a loop, or coordinate parallel agents.</p>
+  <p>The open-source ecosystem, they argue, has moved fast on the second axis and slowly on the first — most open models sit at or just above 1T parameters. Applying ever-more-sophisticated RL to pre-trained foundations of the same size risks convergence while the gap to the strongest closed systems widens. K3's answer is to push both at once: a 3T-class pre-trained base, plus RL, reasoning effort, and long-horizon interaction at 1M context.</p>
+
+  <div class="pull"><b>The bet.</b> Architecture buys the base; RL buys the behaviour; infrastructure is what makes both physically possible at 2.8T parameters and million-token trajectories. The paper is organised in exactly that order.</div>
+
+  <h2><span class="num">02</span>Model architecture</h2>
+  <p>The design scales information flow along three dimensions: sequence length, network depth, and model width.</p>
+  <ul>
+    <li><b>Sequence</b> — <span class="ref" data-note="hybrid">hybrid attention</span>: three <span class="ref" data-note="kda">KDA</span> layers then one <span class="ref" data-note="mla">Gated MLA</span> layer, repeated.</li>
+    <li><b>Depth</b> — <span class="ref" data-note="attnres">Attention Residuals</span>: each layer attends over the outputs of preceding layers instead of accumulating them.</li>
+    <li><b>Width</b> — <span class="ref" data-note="latentmoe">Stable LatentMoE</span>: sparse channel mixing, 16 of 896 routed experts per token.</li>
+  </ul>
+  <p>Vision is native: <span class="ref" data-note="vit">MoonViT-V2</span> encodes images and video and a light projector maps them into the same embedding space, with no post-hoc alignment stage. Optimisation uses <span class="ref" data-note="per-head-muon">Per-Head Muon</span>.</p>
+
+  <h3>2.1 Hybrid attention</h3>
+  <p>Each block is 3 KDA layers followed by 1 Gated MLA layer — a 3:1 mixing ratio — and one extra Gated MLA layer sits at the end of the backbone so the final layer always performs <span class="ref" data-note="attention">global attention</span>. The intuition: linear layers do cheap recency-aware mixing, and the periodic global layers preserve exact long-range lookup.</p>
+
+  <h3>2.1.1 Kimi Delta Attention</h3>
+  <p>KDA extends the <span class="ref" data-note="delta-rule">delta rule</span> with a <span class="ref" data-note="forget-gate">channel-wise forget gate</span>. For a single head with query and key <span class="m">q<sub>t</sub>, k<sub>t</sub></span>, value <span class="m">v<sub>t</sub></span> and recurrent state <span class="m">S<sub>t</sub></span>:</p>
+  <div class="fig">S_t = (I − β_t k_t k_tᵀ) · Diag(α_t) · S_{t−1} + β_t k_t v_tᵀ
+o_t = S_tᵀ q_t
+<span class="cap">The state is a matrix, not a growing cache. Diag(α) decays it channel by channel; the (I − βkkᵀ) factor erases the part of the state that the current key would have retrieved, before writing the new value in its place.</span></div>
+  <p>Training and prefill use a <span class="ref" data-note="chunkwise">chunkwise parallel form</span>: recurrent across chunks, parallel within each. The one numerical wrinkle is that the chunk form divides keys by a cumulative decay product, which can overflow — solved by <span class="ref" data-note="lower-bound">lower-bounded decay</span>, a change that also removes an awkward kernel path and lets every tile go through the <span class="ref" data-note="tensor-core">Tensor Cores</span>. Finally the output gate is promoted from low-rank to a full-rank input-dependent projection, an instance of <span class="ref" data-note="gating">data-dependent gating</span>.</p>
+
+  <h3>2.1.2 Gated MLA</h3>
+  <p><span class="ref" data-note="mla">Multi-head Latent Attention</span> compresses each token's key–value pair into one low-dimensional latent vector, so the <span class="ref" data-note="kv-cache">KV cache</span> shrinks while global attention is retained. K3 applies <span class="ref" data-note="nope">No Position Encoding</span> to all MLA layers: the KDA layers supply position sensitivity through their decay, so there is no <span class="ref" data-note="rope">RoPE base to retune</span> when the context is extended to 1M. Attention output is kept in FP32 during training to correct a <span class="ref" data-note="flash-fp32">biased rounding error in flash attention</span>.</p>
+
+  <h3>2.2 Attention Residuals</h3>
+  <p>A standard <span class="ref" data-note="residual">residual stream</span> compresses everything a network has computed into one running state — a bottleneck reminiscent of an RNN over time. <span class="ref" data-note="attnres">AttnRes</span> applies the attention trick to depth: each layer holds a learnable pseudo-query and attends over the outputs of all preceding layers, retrieving rather than accumulating.</p>
+  <p>Doing that literally costs O(Ld) memory for keeping every layer output alive, so K3 uses <span class="ref" data-note="block-attnres">Block AttnRes</span>: layers are grouped into 8 blocks of 12, each block summed into a single representation, and cross-block attention runs over those N summaries. Memory and cross-stage communication drop to O(Nd), and inference-time state is bounded, with results merged by <span class="ref" data-note="online-softmax">online softmax</span>.</p>
+
+  <h3>2.3 Stable LatentMoE</h3>
+  <p>In an ordinary MoE every selected expert receives the full-width token vector, so traffic grows with the number of active experts. <span class="ref" data-note="latentmoe">LatentMoE</span> splits the widths: <span class="ref" data-note="shared-experts">shared experts</span> keep a full-width path, routed experts work in a compact latent space. That makes 896 routed experts with 16 active affordable — a <span class="ref" data-note="sparsity">sparsity of 56</span>.</p>
+  <p>Extreme sparsity breaks two things. First, the routed path becomes a chain of nearly four consecutive matmuls and blows up internal activations; fixes are an <span class="ref" data-note="rmsnorm">RMSNorm</span> before the up-projection and a new activation, <span class="ref" data-note="situ">SiTU-GLU</span>, which smoothly caps both branches of <span class="ref" data-note="glu">SwiGLU</span>. Second, <span class="ref" data-note="load-balance">load balancing</span> nearly 10³ experts exceeds what sign-step bias updates handle well; the fix is <span class="ref" data-note="qb">Quantile Balancing</span>, computed in practice from a <span class="ref" data-note="histogram">per-expert histogram</span>.</p>
+
+  <h3>2.4–2.5 Native vision and Per-Head Muon</h3>
+  <p>The vision encoder is trained <em>from scratch</em> with next-token prediction rather than initialised from a <span class="ref" data-note="siglip">contrastively pre-trained model</span> like SigLIP — chosen for training stability, since the SigLIP-initialised tower showed persistent gradient-norm spikes. A <span class="ref" data-note="pixel-shuffle">2×2 pixel shuffle</span> cuts visual tokens fourfold before projection.</p>
+  <p><span class="ref" data-note="muon">Muon</span> is the optimiser for matrix parameters; K3 refines it per attention head, orthogonalising each head's momentum block separately so that large-gradient heads stop dominating the shared update direction — <span class="ref" data-note="per-head-muon">Per-Head Muon</span>.</p>
+
+  <h2><span class="num">03</span>Pre-training</h2>
+  <p>Four text domains (web, code, mathematics, knowledge) plus a large vision corpus, filtered by heuristics, <span class="ref" data-note="quality-classifier">classifier quality scoring</span> and deduplication, with sampling rates set by ablations on small models. Knowledge and maths corpora are <span class="ref" data-note="rephrasing">rephrased</span> with diverse prompting and verified against the source. Vision data adds programmatic pairs — code next to its rendered output — across SVG, 3D assets, webpages, games and CAD.</p>
+  <p>Dedicated <span class="ref" data-note="scaling-law">scaling-law studies</span> retune batch size, learning rate, <span class="ref" data-note="tpp">tokens-per-parameter</span> and model shape, and they consistently favour <span class="ref" data-note="cosine-wsd">cosine decay over WSD</span> once each schedule is given its own optimal hyperparameters.</p>
+
+  <table class="arch">
+    <tr><th>&nbsp;</th><th>Kimi K2</th><th>Kimi K3</th></tr>
+    <tr><td>Layers</td><td>61</td><td class="k3">93</td></tr>
+    <tr><td>Total parameters</td><td>1.04T</td><td class="k3">2.78T</td></tr>
+    <tr><td>Activated parameters</td><td>32.6B</td><td class="k3">104.2B</td></tr>
+    <tr><td>Hidden dimension</td><td>7,168</td><td class="k3">7,168</td></tr>
+    <tr><td>Routed experts</td><td>384</td><td class="k3">896</td></tr>
+    <tr><td>Experts active per token</td><td>8</td><td class="k3">16</td></tr>
+    <tr><td>Shared experts</td><td>1</td><td class="k3">2</td></tr>
+    <tr><td>Attention mechanism</td><td>MLA</td><td class="k3">Hybrid KDA–MLA</td></tr>
+    <tr><td>Activation</td><td>SwiGLU</td><td class="k3">SiTU-GLU</td></tr>
+    <tr><td>Training context</td><td>128K</td><td class="k3">1M</td></tr>
+  </table>
+
+  <p>Context grows on a four-stage curriculum: 8K → 64K during pre-training, then 256K → 1M during cooldown, keeping the expensive long-sequence work inside a small slice of the budget. Long natural documents are scarce and often junk, so they are cleaned, upsampled, and supplemented with <span class="ref" data-note="synthetic-long">synthetic long-context tasks</span> built by permuting and concatenating documents so answers can only be found by attending across the whole window.</p>
+
+  <h2><span class="num">04</span>Post-training</h2>
+  <p>Three stages: <span class="ref" data-note="sft">supervised fine-tuning</span> for a cold-start policy, <span class="ref" data-note="rl">RL</span> to build domain experts at each reasoning effort, and <span class="ref" data-note="mopd">multi-teacher on-policy distillation</span> to fold nine experts (3 domains × 3 efforts) back into one model.</p>
+  <p>RL spans general tasks, general agents and coding agents. The rollout scheme is <span class="ref" data-note="partial-rollout">partial rollouts</span>: generation pauses once a fraction of trajectories finish, and unfinished ones resume next iteration from a preserved <span class="ref" data-note="sandbox">sandbox</span> state — which makes training data go stale, tolerated by a per-token regularizer.</p>
+  <p><span class="ref" data-note="effort">Reasoning effort</span> is trained by budget control: each problem gets an initial token budget, and trajectories that exceed a scaled threshold are given reward −1. For non-verifiable tasks the judge is an <span class="ref" data-note="grm">agentic generative reward model</span> with a mandatory rubric protocol and a verbosity cap to blunt <span class="ref" data-note="reward-hacking">reward hacking</span>.</p>
+  <p>Deployment shapes training too: <span class="ref" data-note="qat">quantization-aware training</span> in MXFP4 weights and MXFP8 activations runs through SFT and RL so rollout and training share one numerical scheme, and the pre-trained <span class="ref" data-note="mtp">multi-token-prediction layer</span> is fine-tuned into an <span class="ref" data-note="eagle3">EAGLE-3 draft model</span> for <span class="ref" data-note="spec-decode">speculative decoding</span>, optimising the <span class="ref" data-note="lk-loss">acceptance rate directly</span>.</p>
+
+  <h3>4.2 Environments</h3>
+  <p>The environments are as much of the contribution as the algorithm.</p>
+  <ul>
+    <li><b>A white-box harness.</b> Tool interfaces, prompts, context management, skills, memories and subagents are composable modules, so the same model trains across configurations that imitate <span class="ref" data-note="harness">Kimi Code, Claude Code, Codex and others</span> rather than overfitting one.</li>
+    <li><b>Knowledge-graph task synthesis.</b> Agents grow a <span class="ref" data-note="kg-synth">self-evolving concept DAG</span>, sample nodes for granularity and coverage, retrieve real materials, and synthesise tasks from them.</li>
+    <li><b>Kernel optimisation.</b> Reward 0.5 for matching an expert implementation, rising toward 1 near the <span class="ref" data-note="roofline">hardware roofline</span>, with a detector penalising <span class="ref" data-note="reward-hacking">CUDA graph replay, input caching and precision cheats</span>.</li>
+    <li><b>Personal assistant tasks.</b> Mock Gmail, Notion, Slack and Canvas; persistent multi-day worlds; up to thousands of tool calls and millions of tokens per rollout.</li>
+    <li><b>Autonomous execution.</b> Goal, budget, and an independent <span class="ref" data-note="verifier">verifier</span> — no reference trajectory. Reward is graded on the final environment state, not the agent's own claim of success.</li>
+  </ul>
+
+  <h2><span class="num">05</span>Infrastructure</h2>
+  <p>Three unusual pressures at once: a hybrid recurrent/global attention stack, 3T-class sparse multimodal training, and million-token agentic rollouts.</p>
+
+  <h3>5.1 KDA kernels and context parallelism</h3>
+  <p>The chunkwise form alternates parallel and serial phases, leaving SMs idle during propagation, so FlashKDA overlaps intra-chunk computation with cross-chunk state propagation. Across devices, plain summation of local states does not work for KDA — the delta rule applies a token-dependent matrix to the incoming state — so <span class="ref" data-note="kcp">KDA Context Parallelism</span> decomposes each segment into a cumulative transition plus a locally generated state, which compose associatively and can therefore be resolved by a <span class="ref" data-note="prefix-scan">prefix scan</span> over a fixed-size all-gather.</p>
+
+  <h3>5.2 3T-class pre-training</h3>
+  <p>Training combines <span class="ref" data-note="pp">pipeline parallelism with virtual stages</span>, <span class="ref" data-note="ep">expert parallelism</span>, <span class="ref" data-note="zero">ZeRO-1 data parallelism</span>, pipeline ZeRO-2 gradient sharding and <span class="ref" data-note="cp">context parallelism</span>. The MoE-specific contribution is <span class="ref" data-note="moonep">MoonEP</span>: perfect load balance via dynamic redundant experts, with a proof that at most E/R redundant experts per rank always suffice, which turns token counts into static shapes and removes per-layer host synchronisation.</p>
+  <p>Memory is handled by a unified activation manager where <span class="ref" data-note="recompute">recomputation</span>, <span class="ref" data-note="fp8">FP8 quantization</span> and offload are pluggable per-tensor policies; gradients are sharded and parked in CPU memory; <span class="ref" data-note="muon">Muon</span>'s orthogonalisation gathers only the shards a rank owns, over P2P, instead of an all-gather of the whole parameter buffer.</p>
+
+  <h3>5.3–5.4 Agentic RL and serving</h3>
+  <p>Long-context RL contends for memory between rollout KV cache and training. K3 writes idle prefixes back to an <span class="ref" data-note="external-kv">external CPU DRAM pool</span>, offloads training state to NVMe between iterations, and throttles rollout concurrency from live signals. Sandboxes are Firecracker <span class="ref" data-note="sandbox">microVMs</span> with pause/fork/snapshot; over 51 million sandboxes were created during the project.</p>
+  <p>Serving has to reuse work across requests, which for a hybrid model means the KDA recurrent state and the MLA cache must be restorable at the <em>same</em> boundary. The fix decouples granularities: <span class="ref" data-note="prefix-cache">prefix hashing on 512-token hash blocks</span>, with sparse KDA checkpoints saved only at hash-aligned positions. Cache pages store each head's state contiguously so that <span class="ref" data-note="pd-disagg">prefill and decode nodes</span> can run at different tensor-parallel degrees. Above a single instance, sessions are pinned by <span class="ref" data-note="consistent-hash">consistent hashing</span> to a primary and secondary cluster, and request classes get separate budgets so a burst of million-token jobs cannot wreck <span class="ref" data-note="ttft">time-to-first-token</span> for short ones.</p>
+
+  <h2><span class="num">06</span>Evaluation</h2>
+  <p>Four axes — reasoning &amp; knowledge, coding, agentic, vision — against Claude Fable 5, GPT-5.6 Sol, Claude Opus 4.8, GPT-5.5 and GLM-5.2. All at maximum reasoning effort. Read the numbers with the <span class="ref" data-note="benchmarks">usual caveats</span>: harnesses differ, some scores are cited from third parties on given dates, and Fable 5 results include fallback behaviour.</p>
+  <ul>
+    <li><b>Reasoning.</b> 93.5 on GPQA Diamond, competitive; but 43.5/56.0 on HLE-Full and 23.4 on CritPt, behind the leaders — research-level reasoning is named as the weak spot.</li>
+    <li><b>Coding.</b> Best on ProgramBench (77.8) and SWE-Marathon (42.0, 7 points ahead of Fable 5); second on FrontierSWE (81.2 vs 86.6).</li>
+    <li><b>Agentic.</b> Leads BrowseComp (91.2), DeepSearchQA, MCPMark-Verified, τ³-Banking, Harvey Lab-AA; trails on the <span class="ref" data-note="elo">Elo-rated</span> knowledge-work suites.</li>
+    <li><b>Vision.</b> Highest on OmniDocBench (91.1); ties Fable 5 on ZeroBench-main at 23.0 <span class="ref" data-note="passk">pass@5</span>, rising to 41.0 with a Python tool.</li>
+  </ul>
+  <p>The in-house suite is more revealing than the public one: clear leads on orchestration and deep research, a coding-experience score above its raw task score, and clear deficits on agent behaviour and multi-role enterprise collaboration.</p>
+  <p>Section 6.2.2 is a <span class="ref" data-note="cyber">cyber-capability evaluation</span> — vulnerability discovery and end-to-end exploit development — reported openly, including the note that Anthropic and OpenAI models refuse these tasks so no comparison was possible. On <span class="ref" data-note="cost">cost efficiency</span>, K3 sits on or near the frontier of score-per-dollar on all four measured suites.</p>
+
+  <h2><span class="num">07</span>Case studies</h2>
+  <p>Four claims worth singling out: a 24-hour GPU kernel optimisation run cutting AttnRes latency from 283.6 ms to 114.4 ms; a from-scratch Triton-like compiler with PTX codegen whose matmul reaches ~90% of measured machine roof; a 48-hour autonomous run producing a verified inference-chip RTL prototype; and an astrophysics reproduction — 300+ equations of state, 3,000 lines of Python — in about two hours.</p>
+
+  <div class="pull"><b>What to take from it.</b> Almost every architectural choice here is paid for by a systems change, and vice versa: bounded decay exists to reach the Tensor Cores, LatentMoE exists to make wide routing affordable, Block AttnRes exists to bound the inference state, MoonEP exists so shapes can be static. The paper is a good demonstration that at this scale, model design <em>is</em> systems design.</div>
+
+  <div class="end">
+    Reading aid built from the Kimi K3 technical report (Moonshot AI, July 2026).<br>
+    The left column is a condensed reading of the paper; the notes are explanatory background, not the authors' words.
+  </div>
+
+</div>
+</article>
+
+<!-- ============================ STACK ============================ -->
+<aside class="stack" id="stack">
+  <div class="sheet-bar">
+    <span>Notes</span>
+    <button class="btn" id="sheetClose" type="button">Back to paper</button>
+  </div>
+  <div class="trail" id="trail"></div>
+  <div class="stack-inner" id="stackInner">
+    <div class="empty" id="empty">
+      <h4>Nothing open yet</h4>
+      <p>Every <span class="swatch">underlined phrase</span> in the paper opens a note here.</p>
+      <p>Notes have their own underlined phrases. Following one pushes a deeper card onto the stack, indented one step further, so you can always see how far down you have gone — and click any name in the trail above to come back up.</p>
+      <p>Good places to start: <b>Kimi Delta Attention</b>, <b>Mixture-of-Experts</b>, or <b>Quantile Balancing</b>.</p>
+    </div>
+  </div>
+</aside>
+
+</main>
+
+<script>
+/* ------------------------------------------------------------------ *
+ * NOTES: id -> { t: title, k: kicker, h: html body (may contain refs) }
+ * ------------------------------------------------------------------ */
+const NOTES = {
+
+/* ---------- foundations ---------- */
+"moe": { k:"architecture", t:"Mixture of Experts", h:`
+<p>A dense transformer sends every token through every weight in its feed-forward layers. An MoE replaces that one big feed-forward network with many smaller ones — <b>experts</b> — and a small <span class="ref" data-note="router">router</span> that picks a handful per token. The rest of the experts sit idle for that token.</p>
+<p>The payoff is that <b>capacity and compute stop being the same number</b>. Kimi K3 holds 2.78T parameters but spends only <span class="ref" data-note="active-params">104B</span> of them on any given token, so it can store far more knowledge than its per-token cost suggests.</p>
+<p>The costs are real too: experts must be spread across many GPUs, which turns every layer into a network operation (<span class="ref" data-note="ep">expert parallelism</span>), and if the router sends traffic unevenly, some GPUs stall while others queue — hence the whole <span class="ref" data-note="load-balance">load-balancing</span> literature.</p>
+<div class="aside"><span class="tag">In this paper</span>896 routed experts per layer, 16 active, plus 2 <span class="ref" data-note="shared-experts">shared experts</span> that every token uses.</div>` },
+
+"active-params": { k:"how to read the numbers", t:"Activated vs total parameters", h:`
+<p>Two numbers describe an MoE and they measure different things.</p>
+<p><b>Total parameters</b> (2.78T) is roughly the memory bill: what you must store and shard across GPUs to serve the model at all.</p>
+<p><b>Activated parameters</b> (104.2B) is roughly the compute bill per token: how much arithmetic one forward pass costs. It is the number to compare against a dense model's speed.</p>
+<p>So Kimi K3 is "as expensive to run as a ~100B dense model, as expensive to house as a 2.8T one" — a trade that only pays off if the router genuinely specialises experts, and if the infrastructure can hide the cost of moving tokens to wherever their experts live.</p>
+<div class="aside"><span class="tag">Watch for</span>K2 → K3 raised total parameters 167% but activated parameters 220%. K3 is not just wider; each token also does more work.</div>` },
+
+"sparsity": { k:"terminology", t:"Sparsity ratio", h:`
+<p>Sparsity here is simply <span class="m">routed experts ÷ active experts</span> — 896 ÷ 16 = 56. One token touches 1/56th of the routed capacity.</p>
+<p>Higher sparsity means more specialisation per parameter, but it makes two things harder: each expert sees fewer tokens per batch, so it trains on a thinner slice of data, and the router's choices get noisier and more prone to collapse onto favourites. That is precisely why the paper needs <span class="ref" data-note="qb">Quantile Balancing</span> rather than the usual bias nudges, and why it adds an <span class="ref" data-note="rmsnorm">RMSNorm</span> and a capped activation to stop the thin routed path from exploding.</p>` },
+
+"context": { k:"terminology", t:"The context window", h:`
+<p>The context window is how many tokens the model can condition on at once — everything it can "see" without external retrieval. One million tokens is roughly 10 large novels, or a codebase plus its issue tracker plus hours of conversation.</p>
+<p>Long context is mostly a systems problem. Ordinary attention costs quadratic time and stores a <span class="ref" data-note="kv-cache">KV cache</span> that grows linearly with length, so at 1M tokens both the arithmetic and the memory become the binding constraint. K3 attacks it from three sides: <span class="ref" data-note="kda">linear-attention layers</span> whose state is fixed-size, <span class="ref" data-note="mla">latent compression</span> in the global layers, and <span class="ref" data-note="prefix-cache">aggressive prefix reuse</span> at serving time.</p>
+<div class="aside"><span class="tag">Also a data problem</span>Genuinely long, coherent documents are rare, so the team <span class="ref" data-note="synthetic-long">synthesises</span> tasks that cannot be solved without attending across the entire window.</div>` },
+
+"open-weights": { k:"context", t:"What “open weights” means", h:`
+<p>Releasing weights means anyone can download the parameters and run, fine-tune, quantize or study the model locally. It is not the same as open source in the classical sense: the training data, the data pipeline and most of the training code stay in-house, and licences often carry use restrictions.</p>
+<p>For a 2.8T model the release is also somewhat theoretical for most people — you need a serious multi-GPU cluster to run it at all, which is part of why <span class="ref" data-note="qat">MXFP4 quantization</span> matters so much in this paper.</p>
+<p>The reason labs do it anyway: independent evaluation, ecosystem gravity, and a claim to the frontier that doesn't depend on trusting a private API. The reason it's contested: capability released this way cannot be recalled, which is the backdrop to the paper's own <span class="ref" data-note="cyber">cyber evaluation</span>.</p>` },
+
+"test-time": { k:"concept", t:"Test-time scaling", h:`
+<p>The first scaling axis spends compute <em>before</em> deployment: bigger models, more data. The second spends it <em>during</em> inference — letting the model think longer, retry, use tools, or run several agents in parallel — and buying accuracy with tokens instead of parameters.</p>
+<p>This is why "<span class="ref" data-note="effort">reasoning effort</span>" is now a first-class model feature rather than a sampling setting, and why the paper's cost charts plot score against dollars per task rather than against parameter count. A model that is 3 points weaker but 5× cheaper per task may be the better tool.</p>
+<div class="aside"><span class="tag">The paper's claim</span>Open models have raced along this second axis while stalling on the first, so the gap to closed frontier systems keeps widening. K3's answer is to move both at once.</div>` },
+
+"scaling-law": { k:"concept", t:"Scaling laws", h:`
+<p>Empirically, loss falls as a smooth power law in compute, parameters and data. Fit the curve at small scale, extrapolate, and you can choose a model shape and token budget before committing to a run you can only afford once.</p>
+<p>"2.5× scaling efficiency" means K3's fitted curve sits below K2's: to reach a given validation loss it needs about 2.5× less compute. That is an architecture-and-recipe claim, not a benchmark claim — and it is measured on held-out out-of-distribution validation data rather than on the benchmarks in Section 6.</p>
+<p>Because the architecture changed, the old optimal hyperparameters no longer apply, so the team refits batch size, learning rate, <span class="ref" data-note="tpp">tokens-per-parameter</span> and shape — and separately refits <span class="ref" data-note="cosine-wsd">each learning-rate schedule</span> before comparing them.</p>
+<div class="aside"><span class="tag">Caveat worth holding</span>Scaling-law comparisons are only as honest as the hyperparameter search behind each curve. The paper is explicit about this, which is a good sign.</div>` },
+
+"tpp": { k:"terminology", t:"Tokens per parameter", h:`
+<p>TPP is the ratio of training tokens to model parameters — the knob that decides whether you build a bigger model or feed a smaller one more data under a fixed compute budget.</p>
+<p>The Chinchilla result put the compute-optimal ratio around 20 tokens per parameter for dense models, and practice has drifted far higher because inference cost, not training cost, dominates a deployed model's lifetime bill: overtraining a smaller model is often the cheaper end-to-end choice.</p>
+<p>For a sparse MoE the question is muddier — which parameter count goes in the denominator, total or <span class="ref" data-note="active-params">activated</span>? — which is exactly why K3 refits it empirically rather than importing a constant.</p>` },
+
+"cosine-wsd": { k:"training recipe", t:"Cosine decay vs WSD", h:`
+<p>Two learning-rate schedules. <b>Cosine decay</b> anneals the rate smoothly from peak to a floor over the whole run. <b>WSD</b> (warmup–stable–decay) holds a constant rate for most of training and decays sharply at the end, which lets you branch a run or extend it without having planned the endpoint.</p>
+<p>Prior work reported WSD matching or beating cosine. K3's finding is a methodological one: the two schedules want <em>different</em> peak learning rates and batch sizes, so any comparison at shared hyperparameters silently favours whichever schedule those settings suit. With an independent search for each, cosine won.</p>
+<div class="aside"><span class="tag">Transferable lesson</span>When comparing two training methods, tune both. Most published "A beats B" results at fixed hyperparameters are partly measuring which method the tuning was inherited from.</div>` },
+
+/* ---------- attention family ---------- */
+"attention": { k:"first principles", t:"Attention, from the ground up", h:`
+<p>Each token emits three vectors: a <b>query</b> (what am I looking for), a <b>key</b> (what do I offer), and a <b>value</b> (what I'd hand over). A token's output is a weighted average of everyone's values, where the weight for a source is how well its key matches your query — normalised by a <span class="ref" data-note="softmax">softmax</span>.</p>
+<div class="eq">out_i = Σ_j softmax_j( q_i · k_j ) · v_j</div>
+<p>The power is that weights are computed from content, not fixed by position: any token can reach any other in one step. The cost is that computing all pairs is quadratic in sequence length, and generating text incrementally means storing every past key and value — the <span class="ref" data-note="kv-cache">KV cache</span>.</p>
+<p>Nearly every architecture in this paper is an attempt to keep the first property while escaping one of the two costs — along the sequence with <span class="ref" data-note="kda">KDA</span>, in memory with <span class="ref" data-note="mla">MLA</span>, and across depth with <span class="ref" data-note="attnres">AttnRes</span>.</p>` },
+
+"softmax": { k:"first principles", t:"Softmax, and why it's expensive here", h:`
+<p>Softmax turns a vector of scores into positive weights that sum to one: exponentiate everything, divide by the total. It gives attention its selectivity — one strong match can dominate the average.</p>
+<p>Two consequences show up throughout this paper. First, the normalisation is <b>global over the sequence</b>: you cannot finish any token's output until you have seen all its scores, which is why streaming implementations need <span class="ref" data-note="online-softmax">online softmax</span> to merge partial results. Second, exponentials have brutal dynamic range, so numerically stable implementations subtract a running maximum — the same class of concern that motivates <span class="ref" data-note="lower-bound">bounding KDA's decay</span> and keeping <span class="ref" data-note="flash-fp32">attention output in FP32</span>.</p>
+<p>Linear attention's defining move is to <em>drop</em> the softmax so the sum can be reassociated into a recurrent state. You lose sharp selectivity and gain O(1) memory.</p>` },
+
+"kv-cache": { k:"inference", t:"The KV cache", h:`
+<p>When generating token by token, all previous keys and values would be recomputed at every step, so they are cached instead. That cache is the dominant memory cost of long-context serving: it grows linearly in sequence length, in batch size, and in the number of heads.</p>
+<p>At 1M tokens this is the whole ballgame. Three responses appear in the paper:</p>
+<ul>
+<li><span class="ref" data-note="mla">MLA</span> caches one small latent vector per token instead of full per-head keys and values.</li>
+<li><span class="ref" data-note="kda">KDA</span> layers have no growing cache at all — just a fixed-size matrix state.</li>
+<li><span class="ref" data-note="prefix-cache">Prefix caching</span> reuses the cache across requests that share an opening.</li>
+</ul>
+<p>The hybrid design creates its own headache: a cached prefix is only reusable if <em>both</em> the MLA cache and the KDA state can be restored at the same token boundary.</p>` },
+
+"hybrid": { k:"architecture", t:"Why hybrid attention", h:`
+<p>Linear attention is cheap and has fixed memory, but its state is lossy — it cannot reliably retrieve one exact fact from 800K tokens ago. Full attention can, but pays quadratic compute and a growing cache.</p>
+<p>The hybrid answer: use <span class="ref" data-note="kda">KDA</span> for the bulk of layers (3 of every 4) and drop in a <span class="ref" data-note="mla">global MLA layer</span> periodically to restore exact long-range lookup. K3 also forces the <em>last</em> layer of the backbone to be global, so the final representation always has unrestricted access.</p>
+<p>A neat side effect: because the linear layers already encode order through their decay, the global layers can drop positional encoding entirely — see <span class="ref" data-note="nope">NoPE</span>.</p>
+<div class="aside"><span class="tag">Design pattern</span>Interleaving a cheap approximate mechanism with a periodic exact one shows up everywhere in systems. The ratio (here 3:1) is the tuning knob between cost and fidelity.</div>` },
+
+"kda": { k:"the paper's core mechanism", t:"Kimi Delta Attention", h:`
+<p>KDA is a <span class="ref" data-note="linear-attention">linear-attention</span> layer whose recurrent state is a matrix <span class="m">S ∈ R^(d_k × d_v)</span> — think of it as an associative memory mapping keys to values. Reading is one matrix–vector product: <span class="m">o_t = Sᵀ q_t</span>.</p>
+<p>Writing combines two ideas:</p>
+<div class="eq">S_t = (I − β_t k_t k_tᵀ) · Diag(α_t) · S_{t−1} + β_t k_t v_tᵀ</div>
+<ul>
+<li><span class="ref" data-note="forget-gate">Diag(α_t)</span> — a per-channel forget gate that decays old memory, differently for each key channel, based on the current token.</li>
+<li><span class="ref" data-note="delta-rule">(I − βkkᵀ)</span> — the delta rule: erase whatever the current key would have retrieved before writing the new value, so updating a key overwrites rather than superimposes.</li>
+</ul>
+<p>β controls write strength; both α and β are produced from the token itself, so the memory policy is data-dependent. Everything else in the KDA section is about making this recurrence run fast: a <span class="ref" data-note="chunkwise">chunkwise form</span> for parallelism, <span class="ref" data-note="lower-bound">bounded decay</span> for numerical range, and <span class="ref" data-note="kcp">KCP</span> for splitting it across devices.</p>` },
+
+"linear-attention": { k:"concept", t:"Linear attention", h:`
+<p>Remove the <span class="ref" data-note="softmax">softmax</span> from attention and the sum reassociates. Instead of comparing each query against every key, you can accumulate keys and values into a single state matrix and query that:</p>
+<div class="eq">S_t = S_{t−1} + k_t v_tᵀ        o_t = S_tᵀ q_t</div>
+<p>Now generation costs O(1) memory and O(1) time per token, no matter how far back the context goes. The whole family — Linear Transformers, RWKV, Mamba, GLA, DeltaNet — are variations on what goes into that update.</p>
+<p>The catch is capacity. The state is a fixed-size matrix, so writing new content necessarily degrades old content; recall becomes approximate and the model drifts toward recency. The <span class="ref" data-note="delta-rule">delta rule</span> and <span class="ref" data-note="forget-gate">gating</span> are both attempts to spend that limited capacity better, and the <span class="ref" data-note="hybrid">hybrid design</span> is an admission that they don't fully close the gap.</p>` },
+
+"delta-rule": { k:"mechanism", t:"The delta rule", h:`
+<p>Ordinary linear attention writes by adding: <span class="m">S ← S + k vᵀ</span>. If the same key is written twice with different values, both stay in the state and superimpose — you read back a blend of them.</p>
+<p>The delta rule writes the <em>difference</em> instead. First look up what the state currently returns for this key, then correct toward the new value:</p>
+<div class="eq">S ← S + β · k · (v − Sᵀk)ᵀ
+  = (I − β k kᵀ) S + β k vᵀ</div>
+<p>The bracketed operator projects out the component of the state that key k would have read, which is exactly why the second form appears in the KDA equation. The result behaves like a key-value store that supports <b>update</b>, not just <b>append</b> — much better at tracking state that changes over a long document.</p>
+<div class="aside"><span class="tag">Lineage</span>This is the classic Widrow–Hoff learning rule, reinterpreted: the model is doing one step of online learning inside its own forward pass.</div>` },
+
+"forget-gate": { k:"mechanism", t:"Channel-wise forget gates", h:`
+<p>A recurrent state that never forgets saturates. The standard fix is a decay factor α applied at each step — but a single scalar α forces every dimension of memory to be forgotten at the same rate.</p>
+<p>KDA makes α a <b>vector</b>: one retention factor per key channel, computed from the current token through a low-rank projection plus a per-head bias. Some channels can hold information for a hundred thousand tokens while others turn over every few tokens, and which is which depends on what is being read.</p>
+<p>This is the "gated" part of gated linear attention, and it's what gives these layers their implicit sense of position: how much something has decayed encodes roughly how long ago it was written. That is the basis for the <span class="ref" data-note="nope">NoPE</span> decision.</p>` },
+
+"chunkwise": { k:"implementation", t:"The chunkwise parallel form", h:`
+<p>A recurrence is inherently serial, and GPUs hate serial. The standard resolution splits the sequence into chunks of, say, 64 tokens and reorganises the maths into two parts:</p>
+<ul>
+<li><b>Inter-chunk</b>: each chunk's output contribution from the state it inherited — one matrix multiply.</li>
+<li><b>Intra-chunk</b>: interactions among tokens inside the chunk — a masked matmul, using <span class="m">Tril</span> to enforce causality.</li>
+</ul>
+<p>So it is recurrent <em>across</em> chunks and parallel <em>within</em> them: only one small serial step per chunk, and the heavy arithmetic lands on dense matrix multiplies that the <span class="ref" data-note="tensor-core">Tensor Cores</span> want.</p>
+<p>Getting the delta rule into this form requires the <span class="ref" data-note="ut-transform">UT transform</span>, which unrolls the chain of rank-one projections within a chunk into an explicit matrix.</p>
+<div class="aside"><span class="tag">Kernel note</span>Naively the two phases alternate and the GPU idles during the serial part. FlashKDA overlaps intra-chunk computation with cross-chunk state propagation to keep the machine busy.</div>` },
+
+"ut-transform": { k:"implementation", t:"The UT transform", h:`
+<p>Within a chunk, the delta rule composes a product of rank-one projectors <span class="m">(I − β₁k₁k₁ᵀ)(I − β₂k₂k₂ᵀ)…</span>. Applying them one at a time would be serial again.</p>
+<p>The UT transform (the "WY representation" from numerical linear algebra, used for stacking Householder reflections) rewrites that whole product as <span class="m">I − K T Kᵀ</span> with a small triangular matrix T that can be built once per chunk. From it you get the auxiliary matrices U and W, and a pseudo-value term that folds the incoming state in.</p>
+<p>The point is mundane and important: it converts a sequence of small serial updates into two dense matmuls, which is the difference between a kernel that runs at 5% of peak and one that runs at 60%.</p>` },
+
+"lower-bound": { k:"the fix", t:"Lower-bounded decay", h:`
+<p>The chunkwise form rescales keys by the reciprocal of the cumulative decay, <span class="m">1/Γ</span>. Since each α is below 1, Γ shrinks geometrically along a chunk and its reciprocal can explode past what the number format can hold.</p>
+<p>Kimi Linear handled this by computing in log space and splitting chunks into 16-token tiles — but the diagonal tiles still needed an explicit per-position-pair computation, a separate slow kernel path.</p>
+<p>K3's change is to bound the decay from below. Instead of an unbounded negative-softplus map, log-decay goes through a scaled sigmoid pinned to a floor of <span class="m">g_min = −5</span>:</p>
+<div class="eq">g = g_min · sigmoid(e^A · z) ∈ (−5, 0)
+α = exp(g) > e^−5 ≈ 0.0067</div>
+<p>Over a 16-token tile the cumulative log-decay now lives in (−80, 0), so the rescaling factor stays under e⁸⁰ — inside <span class="ref" data-note="bf16">BF16 range</span>. With no overflow to dodge, <em>every</em> tile including the diagonal can be a dense matmul on <span class="ref" data-note="tensor-core">Tensor Cores</span>, and the special-case path disappears.</p>
+<div class="aside"><span class="tag">Why it's a nice result</span>A modelling choice (how much a token may forget) was made to serve a hardware constraint (dynamic range), and it deleted a kernel instead of adding one. Bounding the forget rate also has a mild modelling cost — nothing can be erased instantly — which the authors accept.</div>` },
+
+"bf16": { k:"hardware", t:"BF16 and dynamic range", h:`
+<p>BF16 keeps FP32's 8 exponent bits and throws away mantissa bits, so it spans a huge range (about 10^±38) with only ~3 decimal digits of precision. That trade is right for deep learning: gradients vary wildly in magnitude, but each value doesn't need many significant digits.</p>
+<p>The relevance here: a rescaling factor of e⁸⁰ ≈ 5×10³⁴ fits comfortably in BF16's range where it would overflow FP16 (max ~65,504). Precision is not the constraint; <em>range</em> is. That is why the <span class="ref" data-note="lower-bound">decay floor</span> is chosen to keep the exponent bounded rather than to keep values small.</p>
+<p>The same distinction explains why K3 quantizes expert weights to <span class="ref" data-note="qat">MXFP4</span> — 4-bit values with a shared block exponent — rather than to a plain 4-bit fixed-point format.</p>` },
+
+"tensor-core": { k:"hardware", t:"Tensor Cores", h:`
+<p>Tensor Cores are the matrix-multiply units on modern NVIDIA GPUs. They perform small dense matmuls (e.g. 16×16×16) as a single instruction and are roughly an order of magnitude faster than the general-purpose CUDA cores for that shape.</p>
+<p>The practical consequence for anyone writing kernels: <b>work that can be expressed as a dense matmul runs on a different machine than work that cannot</b>. Elementwise operations, gathers, and anything with per-position branching fall back to the slow path and quickly dominate the runtime.</p>
+<p>This single fact explains a surprising number of design choices in this paper — the <span class="ref" data-note="chunkwise">chunkwise form</span>, the <span class="ref" data-note="ut-transform">UT transform</span>, the <span class="ref" data-note="lower-bound">bounded decay</span>, and MoonEP's insistence on <span class="ref" data-note="moonep">statically known shapes</span> all exist to keep computation in matmul form.</p>` },
+
+"mla": { k:"mechanism", t:"Multi-head Latent Attention", h:`
+<p>Introduced in DeepSeek-V2. In standard multi-head attention you cache a key and a value per head per token. MLA instead projects each token into one small <b>latent</b> vector <span class="m">c_t = W_c x_t</span>, caches only that, and reconstructs per-head keys and values on the fly through learned up-projections.</p>
+<p>The <span class="ref" data-note="kv-cache">cache</span> shrinks by a large factor while attention stays fully global — you are compressing what is stored, not what is attended to. Compare with the cheaper alternatives it displaced: grouped-query attention shares keys across heads (coarser), MLA compresses their shared structure (learned).</p>
+<p>K3 adds an input-dependent full-rank <span class="ref" data-note="gating">output gate</span>, so each token can modulate which channels it reads out of global attention, and keeps <span class="ref" data-note="nope">no positional encoding</span> in these layers.</p>` },
+
+"nope": { k:"design choice", t:"NoPE — no position encoding", h:`
+<p>Transformers need to know token order somehow, because attention itself is permutation-invariant. Usually that's <span class="ref" data-note="rope">RoPE</span>, rotating queries and keys by an angle proportional to position.</p>
+<p>K3's MLA layers use <b>none</b>. Order information arrives instead through the interleaved <span class="ref" data-note="kda">KDA</span> layers, whose <span class="ref" data-note="forget-gate">decay</span> makes representations inherently recency-aware — how faded something is tells you roughly how old it is.</p>
+<p>The payoff is at the long-context boundary. RoPE-based models must be retrofitted to a longer window by rescaling frequencies or applying YaRN, a fiddly step that costs quality. With NoPE there is no positional parameter to retune, so extending toward 1M tokens is a data-and-systems problem rather than an extrapolation problem.</p>
+<div class="aside"><span class="tag">Division of labour</span>KDA supplies "when", MLA supplies "what". Neither layer has to do both.</div>` },
+
+"rope": { k:"background", t:"RoPE, YaRN and context extension", h:`
+<p><b>RoPE</b> encodes position by rotating each pair of query/key dimensions by an angle proportional to the token index. Because a dot product then depends on the <em>difference</em> of positions, it gives relative position for free and generalises better than learned absolute embeddings.</p>
+<p>Its weakness is extrapolation: rotate past the range seen in training and attention degrades sharply. The standard repairs — changing the frequency base, position interpolation, or <b>YaRN</b>'s frequency-dependent scaling — all amount to squeezing longer sequences into the angular range the model already knows, usually with continued training to recover quality.</p>
+<p>Avoiding that whole ritual is exactly what <span class="ref" data-note="nope">NoPE</span> buys.</p>` },
+
+"gating": { k:"mechanism", t:"Output gates", h:`
+<p>A gate is an elementwise multiplier in (0,1) computed from the input: <span class="m">y = sigmoid(W_g x) ⊙ h</span>. It lets a token suppress channels of an intermediate result it does not want.</p>
+<p>In attention, gating the output has a documented effect beyond capacity: it reduces "attention sinks" — the pathological habit of dumping attention mass on the first token when nothing is worth attending to — by giving the layer a way to say "return nothing" without distorting the attention distribution itself.</p>
+<p>K3 upgrades both KDA and MLA gates from low-rank to <b>full-rank</b> projections, so the gate can address every channel independently rather than a subspace.</p>` },
+
+"flash-fp32": { k:"numerics", t:"FP32 attention output", h:`
+<p>FlashAttention computes attention in tiles and rescales the running output each time it meets a larger score. Each rescale rounds — and because the rescale factor is always ≤ 1, the rounding error is <em>biased</em> rather than zero-mean, so it accumulates over many tiles instead of cancelling.</p>
+<p>K3 keeps the attention output tile in FP32 during training to stop that drift. The price is on-chip: the output tile doubles in size, eating shared memory that the kernel needs for other things. Their fix is a scheduling one — overlap the output tile with the KV staging buffers rather than the query tile, which frees room for a deeper KV pipeline.</p>
+<div class="aside"><span class="tag">Recurring theme</span>Numerical correctness at scale is rarely "use more bits". It's "use more bits exactly where the error is biased, and pay for it somewhere the hardware has slack".</div>` },
+
+/* ---------- depth ---------- */
+"residual": { k:"first principles", t:"Residual connections", h:`
+<p>A residual connection adds a layer's input to its output: <span class="m">h_l = h_{l−1} + f(h_{l−1})</span>. It made very deep networks trainable, because gradients have a direct path back to early layers and each layer only has to learn a correction.</p>
+<p>The structural cost is that the residual stream is a <b>single running sum</b>. Every layer reads the same accumulated state and adds to it; there is no way for layer 60 to consult layer 12's output specifically without whatever survived 48 rounds of accumulation.</p>
+<p>The paper's framing is sharp: over depth, this is the same bottleneck an RNN has over time — and the historical fix for that bottleneck was <span class="ref" data-note="attention">attention</span>.</p>` },
+
+"attnres": { k:"the paper's second core idea", t:"Attention Residuals", h:`
+<p>Apply attention <em>across layers</em>. Each layer <span class="m">l</span> gets a learnable pseudo-query <span class="m">w_l</span>; the keys and values are the outputs of all preceding layers plus the token embedding. Then:</p>
+<div class="eq">α_{i→l} = softmax_i( w_lᵀ · RMSNorm(v_i) )
+h_l     = Σ_i α_{i→l} · v_i</div>
+<p>So a layer <b>retrieves</b> from the history of computation rather than reading a uniform accumulation of it — and can, for instance, reach back to the raw embedding while ignoring the last thirty layers.</p>
+<p>The pseudo-query is learned and not token-dependent, so the routing over depth is fixed per layer, not per token: cheaper, and enough. <span class="ref" data-note="rmsnorm">RMSNorm</span> on the keys is there so a layer with large-magnitude outputs cannot dominate the weights by scale alone.</p>
+<p>Arithmetic is O(L²d), fine when depth is under 100; the real cost is keeping every layer's output alive, which motivates <span class="ref" data-note="block-attnres">Block AttnRes</span>.</p>` },
+
+"block-attnres": { k:"the practical version", t:"Block Attention Residuals", h:`
+<p>Full AttnRes needs O(Ld) memory to hold every layer output — and under <span class="ref" data-note="pp">pipeline parallelism</span> those outputs have to cross stage boundaries, turning depth into network traffic.</p>
+<p>Block AttnRes partitions the 93 layers into 8 blocks of 12. Within a block, layer outputs are simply <b>summed</b> into one representation; attention runs only over the N block-level summaries (plus the running partial sum of the current block). Memory and communication fall to O(Nd).</p>
+<p>The structural bonus is at inference: the state a decoding step must carry is now bounded by N rather than L, and the parallel inter-block result can be merged with the sequential intra-block partial sum through <span class="ref" data-note="online-softmax">online softmax</span> — so this is cheaper to serve, not just to train. Empirically N ≈ 8 recovers most of the benefit of the full version.</p>` },
+
+"online-softmax": { k:"technique", t:"Online softmax", h:`
+<p>A softmax normally needs all scores before it can normalise. Online softmax computes it incrementally: keep a running maximum and a running denominator, and when a new block of scores arrives, rescale what you already have and fold the block in. The final answer is bit-for-bit the same as the batch computation.</p>
+<p>This is the trick underneath FlashAttention — it's what allows attention to be tiled without materialising the full score matrix — and here it's what lets <span class="ref" data-note="block-attnres">Block AttnRes</span> merge a batched inter-block pass with per-layer intra-block updates instead of waiting for all blocks.</p>` },
+
+"rmsnorm": { k:"component", t:"RMSNorm", h:`
+<p>Root-mean-square normalisation divides a vector by the root mean square of its entries and scales by a learned gain: <span class="m">x / rms(x) · g</span>. It is LayerNorm without the mean subtraction and without a bias, which is cheaper and empirically just as good.</p>
+<p>Its job in this paper is always the same — <b>strip scale so that only direction matters</b>. Three appearances:</p>
+<ul>
+<li>Before <span class="ref" data-note="latentmoe">LatentMoE</span>'s up-projection, so the aggregated routed output doesn't vary in magnitude with which experts fired.</li>
+<li>On <span class="ref" data-note="attnres">AttnRes</span> keys, so a loud layer can't win attention by amplitude.</li>
+<li>On KDA's recurrent output before gating.</li>
+</ul>
+<p>The recurring failure mode it guards against is one branch of a sum quietly dominating another — which at 2.8T parameters shows up as divergence rather than as a small quality loss.</p>` },
+
+/* ---------- MoE machinery ---------- */
+"latentmoe": { k:"mechanism", t:"LatentMoE", h:`
+<p>In a conventional MoE every selected expert receives the full d-dimensional token vector, so both the network traffic and the expert weight traffic scale with how many experts you activate. Wanting 16 active experts instead of 8 doubles that bill.</p>
+<p>LatentMoE separates two widths. <span class="ref" data-note="shared-experts">Shared experts</span> keep the full width for common transformations; routed experts operate in a compact latent space of width ℓ (here 3584, half the hidden size). A down-projection <span class="m">W↓</span> takes the token into latent space, experts do their work there, and one <span class="m">W↑</span> brings the aggregate back:</p>
+<div class="eq">u = Σ_{i∈Top-k} p_i · E_i(W↓x)
+y = Σ_j E_shared_j(x) + W↑ · RMSNorm(u)</div>
+<p>Two failure modes come with the territory: the routed path becomes a chain of nearly four consecutive matmuls that amplifies activations (hence the <span class="ref" data-note="rmsnorm">RMSNorm</span> and <span class="ref" data-note="situ">SiTU-GLU</span>), and balancing ~10³ experts breaks the usual bias-nudge scheme (hence <span class="ref" data-note="qb">Quantile Balancing</span>).</p>` },
+
+"shared-experts": { k:"design pattern", t:"Shared vs routed experts", h:`
+<p>A shared expert processes <em>every</em> token; routed experts process only the tokens sent to them. The idea (from DeepSeekMoE) is a division of labour: shared experts absorb the transformations everyone needs, so routed experts don't each have to relearn them and can spend their capacity on genuine specialisation.</p>
+<p>It also stabilises training — there is always a dense path through the layer, regardless of what the <span class="ref" data-note="router">router</span> does — and it gives the system something useful to overlap: shared-expert GEMMs run on a separate stream while the routed <span class="ref" data-note="ep">all-to-all</span> is in flight.</p>
+<p>K3 uses 2 shared experts per layer, up from 1 in K2.</p>` },
+
+"router": { k:"mechanism", t:"The router", h:`
+<p>A single linear layer plus a nonlinearity produces a score per expert for each token; the top-k scoring experts are selected and their outputs are combined with weights derived from those scores.</p>
+<div class="eq">s_i = sigmoid(W_r x_i)
+T_i = argtop_k( s_i + b )     ← bias steers dispatch
+p_i,j = s_i,j / Σ_{r∈T_i} s_i,r  ← bias absent from weights</div>
+<p>Notice the asymmetry: the balancing bias <b>b</b> is used to choose experts but excluded from the mixture weights. That is deliberate — it lets you steer traffic for systems reasons without distorting the model's function or the router's gradients. It's the trick that makes <span class="ref" data-note="load-balance">auxiliary-loss-free balancing</span> possible.</p>
+<p>Because top-k is discrete, routing is non-differentiable; the model only learns through the weights p, which is why routers are prone to collapse and need external help staying balanced.</p>` },
+
+"load-balance": { k:"the problem", t:"Load balancing in MoE", h:`
+<p>Nothing stops a router from sending most tokens to a few favourite experts. When it does, two bad things happen at once: the overloaded GPUs become the critical path while others idle, and the starved experts get so little gradient signal they effectively die.</p>
+<p><b>Auxiliary-loss balancing</b> adds a penalty term for imbalance — effective, but it fights the language-modelling objective and costs quality.</p>
+<p><b>Auxiliary-loss-free balancing</b> (DeepSeek-V3) instead maintains a per-expert bias added only to the <span class="ref" data-note="router">selection score</span>, nudged up or down by a fixed step γ depending on whether the expert is under- or over-loaded. No gradient interference — but γ trades adaptation speed against oscillation, and with 896 experts per layer that trade gets bad.</p>
+<p><span class="ref" data-note="qb">Quantile Balancing</span> replaces the nudge with a jump straight to the right answer.</p>` },
+
+"qb": { k:"a nice piece of maths", t:"Quantile Balancing", h:`
+<p>Target load per expert is <span class="m">q = mk/n</span> (m tokens, k choices each, n experts). QB asks directly: <em>what bias would give expert j exactly q tokens?</em></p>
+<p>The trick is to get the token-side thresholds for free. Route with Top-(k+1) instead of Top-k: the first k entries are the real routes, and the (k+1)-th score is exactly the cutoff <span class="m">α_i</span> that an expert must beat to enter token i's selection. Then expert j's load under a candidate bias is the count of tokens whose margin <span class="m">s_i,j − α_i</span> exceeds <span class="m">−b_j</span> — monotone in b, so setting the count to q means picking a <b>quantile</b> of the margins:</p>
+<div class="eq">b_j ← − quantile_{1−k/n}( s_:,j − α )
+b   ← b − mean(b)        (offsets don't change Top-k)</div>
+<p>The update is applied on the next step, so a batch is never routed with a bias derived from itself. At inference the bias is frozen and routing is plain Top-k — no quantiles needed in production.</p>
+<p>The <span class="ref" data-note="dual">derivation</span> shows QB is exact coordinate descent on the dual of an optimal balanced assignment problem, and that the old sign-step rule is just SignSGD on the same objective. That is why QB needs no learning rate and settles in a few steps. Computing an exact quantile over millions of tokens per step is impossible, so it's estimated from a <span class="ref" data-note="histogram">histogram</span>.</p>` },
+
+"dual": { k:"derivation", t:"The assignment problem behind QB", h:`
+<p>Start from the ideal: choose a 0/1 assignment maximising total router score, subject to every token getting exactly k experts and every expert getting exactly mk/n tokens. That's a balanced bipartite b-matching.</p>
+<p>Relax the integrality and it becomes a linear program — and the relaxation is exact, because the b-matching polytope has integral vertices. Introduce multipliers <span class="m">α_i</span> for the token constraints and <span class="m">β_j</span> for the expert constraints and take the dual:</p>
+<div class="eq">min_{α,β} Σ_ij max(0, s_ij − α_i − β_j) + k Σα_i + (mk/n) Σβ_j</div>
+<p>Each coordinate of this convex objective is piecewise linear, so minimising one while holding the other fixed has a closed form — and that closed form is a quantile. Alternating the two gives the solver in Algorithm 1.</p>
+<p>At the optimum, token i selects exactly the top-k of <span class="m">s_i − β</span>. So only the expert-side multipliers survive into deployment; the token-side ones were scaffolding tied to the training batch. That asymmetry is what preserves train–inference consistency.</p>
+<div class="aside"><span class="tag">Lineage</span>The assignment view of expert routing goes back to BASE Layers; QB's contribution is showing the sign-step heuristic and the exact solver are two step rules on the same dual.</div>` },
+
+"histogram": { k:"implementation", t:"Histogram quantile estimation", h:`
+<p>The <span class="ref" data-note="qb">QB</span> quantile is over the whole global batch — millions of margins, spread across data-parallel ranks and gradient-accumulation steps. Gathering them to sort would be absurd inside a training loop.</p>
+<p>But the update only needs the <em>distribution</em>, not the values. So each rank scatter-adds its margins into a per-expert histogram of ~1000 bins during the forward pass, one all-reduce sums the bin counts at the end of the step, and every rank reads the same quantile off the pooled counts by finding the first bin whose cumulative count reaches the target and interpolating inside it.</p>
+<p>Three properties make it work: error is bounded by the bin width (a few 10⁻³ here); communication is one integer all-reduce of n×B values per layer per step, independent of the token count; and because counts are additive, the result is the quantile of the true pooled batch — not an average of per-rank quantiles, which would be a different and wrong number.</p>
+<div class="aside"><span class="tag">Neat detail</span>They histogram the "required bias" rather than the margin, because its range is bounded by the current bias itself — which gives a principled binning interval that adapts each step.</div>` },
+
+"glu": { k:"background", t:"GLU and SwiGLU", h:`
+<p>A gated linear unit splits the feed-forward input into two branches and multiplies them: one branch is a <b>gate</b>, the other a <b>value</b>. The original GLU used a sigmoid gate, bounded in (0,1).</p>
+<p><b>SwiGLU</b> replaces the sigmoid with Swish, <span class="m">x·sigmoid(x)</span>, and has been the default in large language models for years — better perplexity, for reasons that remain more empirical than theoretical.</p>
+<p>The problem at scale: Swish is unbounded on the positive side, and the up branch is a plain linear map, also unbounded. Multiply two unbounded quantities and occasional large coordinates coincide, producing <span class="ref" data-note="activation-outliers">activation outliers</span> — which is trouble in low-precision arithmetic. That is what <span class="ref" data-note="situ">SiTU-GLU</span> is designed to fix.</p>` },
+
+"situ": { k:"the fix", t:"SiTU-GLU", h:`
+<p>Apply a smooth cap, <span class="m">softcap(x, β) = β·tanh(x/β)</span>, to the linear factor of the Swish gate and independently to the up branch:</p>
+<div class="eq">SiTU-GLU(x) =
+ [ β₁·tanh(W_g x / β₁) ⊙ sigmoid(W_g x) ]
+ ⊙ [ β₂·tanh(W_u x / β₂) ]</div>
+<p>With β₁ = 4 and β₂ = 25 the output is bounded by β₁β₂ = 100, while <span class="m">β·tanh(z/β) = z + O(z³/β²)</span> means it is indistinguishable from SwiGLU near the origin — where almost all activations live. Send β → ∞ and you recover SwiGLU exactly.</p>
+<p>Why a smooth cap rather than a hard clamp: a clamp has zero gradient beyond the threshold, so any unit pushed into saturation stops learning. tanh keeps a small nonzero gradient everywhere, which the authors report gives better training behaviour.</p>
+<div class="aside"><span class="tag">Pattern</span>Same shape of solution as <span class="ref" data-note="lower-bound">lower-bounded decay</span>: replace an unbounded map with a bounded one that agrees with it where the data actually is.</div>` },
+
+"activation-outliers": { k:"the problem", t:"Activation outliers", h:`
+<p>Trained transformers develop a handful of channels whose activations are orders of magnitude larger than the rest. They are not noise — they carry real signal, and models degrade badly if you simply clip them.</p>
+<p>They are, however, ruinous for low-precision arithmetic. Quantization scales a whole tile by its maximum, so one outlier compresses everything else in that tile into a couple of representable levels. This is why FP8 and FP4 training schemes lean on fine-grained per-block scaling, and why entire quantization methods (SmoothQuant, AWQ and friends) exist mostly to manage outliers.</p>
+<p>K3's response is preventative: cap the activation function so the outliers are less extreme in the first place, then use <span class="ref" data-note="fp8">block-wise FP8</span> for storage and <span class="ref" data-note="qat">MXFP4</span> for expert weights.</p>` },
+
+/* ---------- optimizer & vision ---------- */
+"muon": { k:"optimizer", t:"Muon and Newton–Schulz", h:`
+<p>Adam treats every weight as an independent scalar. Muon treats a weight <b>matrix</b> as a matrix: it takes the momentum matrix and orthogonalises it — roughly, replaces <span class="m">M = UΣVᵀ</span> with <span class="m">UVᵀ</span> — so the update has uniform magnitude in every direction instead of being dominated by the top singular directions.</p>
+<p>Computing an SVD every step would be hopeless, so the orthogonalisation is approximated by a few <b>Newton–Schulz</b> iterations: a fixed polynomial in the matrix, evaluated with matmuls. Cheap, and exactly the operation GPUs are good at.</p>
+<p>Muon has become the optimiser of choice for large training runs because it reaches a given loss in fewer steps and tolerates larger batches. Its awkwardness is distributed: the orthogonalisation needs the <em>whole</em> matrix, but the optimiser state is sharded across data-parallel ranks — so K3 gathers only the shards a rank owns over P2P instead of all-gathering the full parameter buffer.</p>` },
+
+"per-head-muon": { k:"refinement", t:"Per-Head Muon", h:`
+<p>Attention Q/K/V projections are stored as one big matrix, but functionally they're a stack of independent per-head blocks. Orthogonalising the full matrix treats all heads as a single coupled system, so heads with large gradients dominate the shared update direction while quieter heads get under-normalised updates.</p>
+<p>K3 partitions the momentum matrix along the head dimension and orthogonalises each head's block separately. Learning dynamics equalise across heads, training gets more stable at scale — and it's slightly <em>cheaper</em>, since Newton–Schulz on several tall thin blocks costs less than on one wide matrix.</p>
+<div class="aside"><span class="tag">Generalisable</span>When a matrix is structurally a concatenation of independent things, matrix-aware optimisers should probably respect that structure. The same argument would apply to grouped convolutions or per-expert weights.</div>` },
+
+"vit": { k:"vision", t:"MoonViT-V2 and native multimodality", h:`
+<p>Most multimodal models bolt a pre-trained vision encoder onto a pre-trained language model and align them afterwards. K3 trains one shared backbone on interleaved visual and textual tokens from the start, with only a light MLP projector between the vision tower and the LLM.</p>
+<p>MoonViT-V2 is a 27-layer, ~0.4B-parameter vision transformer using <span class="ref" data-note="rmsnorm">RMSNorm</span> and no biases anywhere. Images and video share parameters: attention is factorised into intra-frame spatial and inter-frame temporal passes, with temporal pooling compressing along time.</p>
+<p>The capability this buys is the one the case studies lean on: the model can write code, look at a screenshot of the rendered result, and iterate — with no hand-off to a separate vision model in the loop.</p>` },
+
+"siglip": { k:"the departure", t:"Why not initialise from SigLIP", h:`
+<p>Contrastive pre-training (CLIP, SigLIP) trains an image encoder by pulling matched image–text pairs together in embedding space. It's the standard way to get a vision tower that already "knows" visual concepts, and nearly everyone initialises from one.</p>
+<p>K3 trains from scratch with next-token prediction instead, for two stated reasons. <b>Stability</b>: the SigLIP-initialised tower showed persistently higher gradient norms with frequent spikes during joint training, while the from-scratch one stayed flat. <b>Objective match</b>: contrastive losses favour global semantics, which is precisely the wrong bias for reading small text, chart ticks or UI structure — whereas next-token prediction shapes the encoder around what the language model actually needs.</p>
+<p>The reported result is the interesting part: from-scratch <em>matches</em> the SigLIP-initialised baseline on vision evaluations. If that holds up, contrastive pre-training is not a necessary ingredient at this scale.</p>` },
+
+"pixel-shuffle": { k:"technique", t:"Pixel shuffle downsampling", h:`
+<p>Pixel shuffle rearranges a 2×2 spatial neighbourhood into the channel dimension: four tokens become one token with four times the features. Nothing is thrown away — the information is folded rather than pooled.</p>
+<p>For a vision-language model this is a straight 4× cut in visual token count before the projector. At K3's limit of 3584×3584 pixel inputs inside a 1M-token context, that factor is the difference between images being affordable and not.</p>` },
+
+/* ---------- data ---------- */
+"quality-classifier": { k:"data", t:"Classifier-based quality scoring", h:`
+<p>Web-scale corpora are mostly junk. Beyond rule-based filters (length, symbol ratios, boilerplate) and deduplication, labs train a small classifier to score documents for "quality" — typically bootstrapped from a seed set of pages judged good, then applied to trillions of tokens.</p>
+<p>It is one of the highest-leverage and least-published parts of a pre-training pipeline: the classifier's implicit definition of quality quietly determines what the model is made of. K3 sets domain sampling rates from ablations on smaller models, which is the standard way to make those choices empirically rather than by taste.</p>` },
+
+"rephrasing": { k:"data", t:"Rephrasing the corpus", h:`
+<p>Inherited from Kimi K2: rather than showing a knowledge or maths document once, generate multiple rewrites of it with style- and perspective-diverse prompting, chunk-wise so long documents stay coherent, then verify each rewrite against the source for fidelity.</p>
+<p>The intuition is that a fact stated in one phrasing is learned as a phrasing; stated five ways, it is learned as a fact. It's also a way to get more value from a scarce, high-quality slice of corpus without simply repeating it — plain repetition tends to memorise rather than generalise.</p>
+<p>The risk to watch is the obvious one: rephrasing with a model imports that model's errors and habits into the training data, which is why the fidelity verification step is not optional.</p>` },
+
+"synthetic-long": { k:"data", t:"Synthetic long-context data", h:`
+<p>Training on long documents does not by itself teach long-range reasoning. Most naturally long text is <em>locally</em> coherent — you can predict the next token from the last few thousand — so the model happily learns a local policy and the extra context is wasted.</p>
+<p>K3 manufactures the pressure instead: permute and concatenate multimodal documents and sub-tasks so that the answer to an embedded task requires evidence scattered across the whole million-token window. Now a purely local strategy loses reward, and attention is trained at the scale it will be used at.</p>
+<div class="aside"><span class="tag">Why it matters for evals</span>This is also why "needle in a haystack" scores and real long-context capability diverge. Retrieval of one planted string is much easier than reasoning that depends on many distant pieces.</div>` },
+
+/* ---------- post-training ---------- */
+"sft": { k:"post-training", t:"Supervised fine-tuning", h:`
+<p>SFT is plain imitation: show the model prompt–response pairs of the behaviour you want and train the usual next-token objective on the response. It converts a raw pre-trained predictor into something that follows instructions and uses tools in the expected format.</p>
+<p>Its role in a modern pipeline is to be a <b>cold start</b>, not the destination. RL can only improve on behaviours the policy already produces sometimes; if the model never emits a well-formed tool-call trajectory, there is nothing for the reward to select. SFT's job is to put those behaviours in the distribution.</p>
+<p>K3's SFT data is largely synthesised by domain-specialised models from the prior Kimi generation, filtered by multi-stage verification and human annotation — the standard bootstrapping loop where each generation of models produces the training data for the next.</p>` },
+
+"rl": { k:"post-training", t:"RL for language models", h:`
+<p>Sample the model's own responses, score them, and increase the probability of the good ones. Unlike <span class="ref" data-note="sft">SFT</span>, this optimises what the model <em>does</em> rather than matching a reference text — which is the only way to improve at tasks with many valid solutions and a checkable outcome.</p>
+<p>Two regimes appear here. Where correctness is machine-checkable — tests pass, the exploit works, the <span class="ref" data-note="verifier">verifier</span> accepts the final state — reward is objective and RL scales cleanly with compute. Where it isn't (writing, research reports, judgement), you need a learned judge: an <span class="ref" data-note="grm">agentic reward model</span>, with all the <span class="ref" data-note="reward-hacking">hacking risk</span> that implies.</p>
+<p>K3 trains 9 specialists — 3 domains × 3 <span class="ref" data-note="effort">effort levels</span> — then merges them with <span class="ref" data-note="mopd">distillation</span>. Long-horizon rollouts of thousands of tool calls make the engineering (<span class="ref" data-note="partial-rollout">partial rollouts</span>, <span class="ref" data-note="sandbox">resumable sandboxes</span>) as decisive as the algorithm.</p>` },
+
+"effort": { k:"capability", t:"Reasoning effort levels", h:`
+<p>Rather than one fixed thinking length, the model is trained to operate at low / high / max effort, selected at request time. Users trade latency and cost against accuracy per call.</p>
+<p>How it's trained: each problem gets an initial token budget <span class="m">b₀</span> estimated from the cold-start model, and any trajectory exceeding <span class="m">τ·b₀</span> is given reward −1 regardless of correctness. Train first with a large τ to get the max-effort expert, then anneal τ down to produce high- and low-effort experts. All of their trajectories are pooled for <span class="ref" data-note="mopd">distillation</span> into the single released model.</p>
+<p>The subtlety is what "budget" counts: thinking tokens for general tasks, but cumulative output including tool-call arguments for agentic ones — otherwise an agent could evade the budget by thinking inside its tool calls.</p>
+<div class="aside"><span class="tag">Read the benchmarks accordingly</span>Every headline number in this report is at max effort. The cost charts are where the other settings show their value.</div>` },
+
+"grm": { k:"post-training", t:"Agentic generative reward models", h:`
+<p>For tasks with no automatic check, a model judges. A <b>generative</b> reward model doesn't emit a scalar directly; it writes out reasoning and then a verdict, which is more accurate and far more auditable.</p>
+<p>K3's judge follows a mandatory protocol: read the output, generate a rubric, score each candidate against it, and record the scores in a scorepad. Comparisons are tournament-style and binary — pairwise preference is easier to get right than absolute scoring, and it doesn't require the judge's scale to be calibrated.</p>
+<p>The judge is itself agentic, meaning it can open the artifact, run it, or inspect source rather than judging from a description — which closes one of the biggest gaps between "looks good" and "is good".</p>` },
+
+"reward-hacking": { k:"the perennial risk", t:"Reward hacking", h:`
+<p>Optimise a proxy hard enough and you get the proxy, not the goal. It's the defining failure mode of RL on real tasks, and this paper is unusually candid about the specific instances.</p>
+<ul>
+<li><b>Verbosity.</b> Judges reward longer answers, so policies inflate. Countermeasure: any candidate exceeding <span class="m">σ·ℓ₀</span> tokens automatically loses its comparison.</li>
+<li><b>Fake kernels.</b> On GPU optimisation tasks, "speedups" from CUDA graph replay, input caching, or quietly reducing precision. Countermeasure: a hacking-detection system, extended as new tricks appear during development.</li>
+<li><b>Fake builds.</b> On web tasks, reward is zeroed when a project fails to build, errors, or mocks the artifact instead of implementing it.</li>
+<li><b>Self-reported success.</b> On autonomous tasks, reward comes from a <span class="ref" data-note="verifier">verifier</span> inspecting the final environment state, never the agent's own claim.</li>
+</ul>
+<p>The general shape of the defence: separate the agent from the grader, grade the world rather than the story, and expect to keep patching — the paper explicitly says the detector was extended continuously as new hacks emerged.</p>` },
+
+"verifier": { k:"method", t:"Verifiers and verifiable rewards", h:`
+<p>A verifier is an independent program that inspects the resulting environment state and decides whether the goal was met. Reward from a verifier is the gold standard: it can't be talked into anything.</p>
+<p>K3's Autonomous Execution Tasks push this further with a two-tier design: <b>public verifiers</b> give diagnostic feedback the agent can iterate against, while <b>hidden verifiers</b> evaluate held-out scenarios and produce the score. That is precisely train/test separation applied inside a single RL environment — it rewards genuine generalisation rather than fitting the feedback signal — and submission budgets with penalties discourage brute-force guessing at the public checker.</p>` },
+
+"mopd": { k:"post-training", t:"Multi-teacher on-policy distillation", h:`
+<p>Nine specialists exist, one model must ship. MOPD merges them: for a given domain and sampled effort level, the matching expert acts as teacher, and the student is trained on <b>its own</b> sampled outputs, rewarded per token by the teacher's log-probability ratio:</p>
+<div class="eq">r = clip( sg[ log( π_teacher(y_t) / π_student(y_t) ) ], −R, R )</div>
+<p>Two things make this work well. It is <span class="ref" data-note="distillation">on-policy</span> — the student learns on the states it actually visits, not on the teacher's trajectories, so it never trains on a distribution it will never see. And the reward is <b>dense</b>: every token carries signal, instead of one scalar at the end of a long trajectory, which is a large variance reduction on exactly the long-horizon tasks K3 cares about.</p>
+<p>Because it slots into the same RL framework, it inherits infrastructure like <span class="ref" data-note="partial-rollout">partial rollouts</span>. The authors note that finer-grained top-k distillation objectives gave no additional benefit.</p>` },
+
+"distillation": { k:"background", t:"Distillation, on- vs off-policy", h:`
+<p>Distillation trains a student to match a teacher's output distribution rather than hard labels — the teacher's uncertainty carries information that a one-hot target throws away.</p>
+<p><b>Off-policy</b> distillation trains on the teacher's own generations. It's simple and parallel, but suffers exposure bias: the student is never taught what to do after it makes a mistake the teacher wouldn't have made, so errors compound at inference.</p>
+<p><b>On-policy</b> distillation samples from the <em>student</em> and asks the teacher to grade those tokens. Every training state is a state the student will actually encounter. It costs more (you need the teacher online during training) and it is the version K3 uses.</p>
+<div class="aside"><span class="tag">Same idea elsewhere</span>This is the imitation-learning distinction between behaviour cloning and DAgger, rediscovered for language models.</div>` },
+
+"partial-rollout": { k:"RL infrastructure", t:"Partial rollouts", h:`
+<p>In agentic RL, trajectory lengths vary by orders of magnitude — a few tool calls versus thousands. Waiting for the slowest rollout in a batch wastes almost all the compute on stragglers.</p>
+<p>Partial rollout pauses generation once a fraction λ of trajectories has finished, trains on those, and <b>enqueues the rest to resume next iteration</b> — which is only possible because the <span class="ref" data-note="sandbox">sandboxes</span> can be paused and restored exactly.</p>
+<p>The cost is staleness: a long trajectory spans several policy versions, so parts of it were generated by a policy the current one no longer matches. K3 absorbs this with a per-token regularizer that keeps updates inside a local trust region, letting the algorithm tolerate an extreme off-policy regime without diverging.</p>` },
+
+"qat": { k:"deployment", t:"Quantization-aware training and MXFP4", h:`
+<p>Post-hoc quantization takes a trained model and rounds it down, then hopes. QAT instead simulates the quantization <em>during</em> training, so the weights adapt to the coarse grid and the loss is recovered rather than absorbed.</p>
+<p>K3 applies QAT through the entire post-training stage — SFT and RL — with MoE expert weights in <b>MXFP4</b> and activations in MXFP8, while attention projections, routers, shared experts and latent projections stay in higher precision. Expert weights dominate the parameter memory, so quantizing just those captures most of the saving.</p>
+<p>MX formats are 4- and 8-bit values sharing a per-block scale factor, which is what makes such low bit-widths survive <span class="ref" data-note="activation-outliers">outliers</span>.</p>
+<p>The quietly important line: during RL, rollout and training use the <em>same</em> quantization scheme. Otherwise the policy you sample from isn't the policy you update — a train–inference mismatch that silently corrupts RL.</p>` },
+
+"mtp": { k:"technique", t:"Multi-token prediction", h:`
+<p>An extra head trained to predict token t+2 (and beyond) alongside the usual t+1. It's a pre-training regulariser — forcing the representation to plan slightly ahead improves quality — and it costs one extra layer.</p>
+<p>Its second life is at inference: that head is already a small model that guesses the next token from the current hidden state, which is exactly what <span class="ref" data-note="spec-decode">speculative decoding</span> needs. K3 fine-tunes the pre-trained MTP layer into an <span class="ref" data-note="eagle3">EAGLE-3-style draft model</span> rather than training a draft model from scratch.</p>` },
+
+"spec-decode": { k:"inference", t:"Speculative decoding", h:`
+<p>Decoding is memory-bandwidth-bound: producing one token requires streaming the whole model's weights, so the arithmetic units mostly idle. Speculative decoding exploits that slack. A cheap <b>draft</b> model proposes several tokens; the big model verifies them all in a single forward pass — nearly as fast as verifying one — and accepts the longest prefix consistent with its own distribution.</p>
+<p>Crucially the acceptance rule is designed so the output distribution is <b>exactly</b> the target model's. It's free speed, not an approximation.</p>
+<p>The hybrid architecture complicates it, though: KDA's <span class="ref" data-note="kda">recurrent state</span> is updated in place, so a rejected draft leaves the state ahead of the last accepted token with nothing to roll back to. K3's answer is to cache only the small projected <em>inputs</em> of the draft tokens and replay them on-chip to rebuild the correct state — cheaper than snapshotting the state at every draft position.</p>` },
+
+"eagle3": { k:"inference", t:"EAGLE-3 draft models", h:`
+<p>EAGLE drafts in <em>feature</em> space rather than token space: the draft layer consumes the target model's hidden states, so it inherits the big model's understanding of the context and guesses much better than an independent small model would. EAGLE-3 adds a training-time test — unrolling the draft for several steps so it learns to consume its own outputs, the way it will at inference.</p>
+<p>K3 fuses low-, mid- and high-level features (outputs of the 1st, 4th and final <span class="ref" data-note="block-attnres">AttnRes blocks</span>) with a projection initialised as <span class="m">[0 0 I]</span> — so at step zero the fused feature is exactly the high-level one the <span class="ref" data-note="mtp">MTP layer</span> was pre-trained on, and the model learns to fold in the lower levels from there.</p>
+<div class="aside"><span class="tag">Initialisation as a hint</span>Starting a new module at the identity of the old behaviour is a recurring trick: you get the previous capability for free on step one and improve from there, instead of paying a regression to relearn it.</div>` },
+
+"lk-loss": { k:"objective design", t:"Optimising acceptance rate directly", h:`
+<p>Speculative decoding's speedup is governed by the per-token <b>acceptance rate</b>, which under lossless sampling equals the overlap of the two distributions:</p>
+<div class="eq">A = Σ_x min( p(x), q(x) )</div>
+<p>Draft models are usually trained by KL divergence to the target, because it's convenient. But KL and this overlap are different objectives, and for a capacity-limited draft they disagree: KL punishes putting mass where the target has none, while acceptance only cares about how much mass you get right.</p>
+<p>K3 optimises <span class="m">−log A</span> directly. A small, clean example of the general lesson: when you know your true metric and it is differentiable, train on it instead of on the surrogate everyone else uses.</p>` },
+
+"sandbox": { k:"RL infrastructure", t:"microVM sandboxes", h:`
+<p>Agentic RL needs environments where a model can do genuinely dangerous things — mount disks, run containers, spawn VMs — without escaping or wedging the host. Container runtimes weren't enough: the team reports kernel panics and deadlocks caused by unintended agent operations.</p>
+<p>AgentENV runs each task in a Firecracker microVM (the same lightweight-virtualization technology behind serverless platforms). Isolation is at the hypervisor boundary, and the environment is close enough to a real machine that hard tasks are possible at all.</p>
+<p>What makes it an RL tool rather than just a sandbox is the lifecycle: incremental checkpointing (only dirty memory pages), giving 133 ms checkpoint and 49 ms resume; <b>pause</b> (a paused sandbox costs nothing, and up to 98% of a sandbox's life is spent waiting on model inference); <b>fork</b> for judging without side effects; and <b>snapshot</b> for recovery. Pause and resume are what make <span class="ref" data-note="partial-rollout">partial rollouts</span> possible.</p>
+<div class="aside"><span class="tag">Scale</span>51,219,741 sandboxes across 1,505,678 images were created during training and evaluation.</div>` },
+
+"kg-synth": { k:"data generation", t:"Knowledge-graph task synthesis", h:`
+<p>Training tasks are only as good and as diverse as their source material, and "scrape more web" gives you a distribution heavily weighted toward popular topics.</p>
+<p>K3 builds a directed acyclic graph of concepts instead, grown by agents: each node is assigned to an agent that searches the web, checks the existing graph for equivalents before adding anything, and stops expanding when the concept is atomic. Edges always run coarse → fine, so depth in the graph <em>is</em> specificity.</p>
+<p>To generate tasks, sample nodes at chosen levels of granularity — individually or in related combinations — build web queries from the node plus its ancestors for context, retrieve real materials, and have a synthesis agent write a task from them.</p>
+<p>The graph is the control surface: sampling depth controls difficulty and specialisation, sampling breadth controls coverage. That's much more steerable than filtering whatever the crawl happened to return.</p>` },
+
+"roofline": { k:"performance", t:"The roofline model", h:`
+<p>A simple performance model: any kernel is limited either by arithmetic throughput or by memory bandwidth. Plot achieved FLOP/s against arithmetic intensity (FLOPs performed per byte moved) and you get a roof — a diagonal bandwidth-limited slope, then a flat compute-limited ceiling.</p>
+<p>Its value is diagnostic. It tells you whether a kernel is slow because it needs better math or because it's starved for data, and it gives an honest upper bound to compare against, so "2× faster" becomes "reached 85% of the achievable roof".</p>
+<p>The paper uses it in two places: as the reward shaping for kernel-optimisation RL tasks (0.5 for matching an expert implementation, rising toward 1 as you approach the roofline) and as the evaluation for the compiler case study.</p>` },
+
+"harness": { k:"evaluation", t:"Agent harnesses", h:`
+<p>A harness is the scaffolding around the model: which tools exist and how they're described, the system prompt, how context is compacted when it overflows, whether subagents are available, how errors are surfaced. Claude Code, Codex, Kimi Code and OpenClaw are all harnesses.</p>
+<p>Two consequences run through this paper. For <b>training</b>, a fixed harness invites overfitting to one tool schema, so K3 composes harnesses from modules and varies them across task groups. For <b>evaluation</b>, harness and model are entangled — a benchmark table where each model runs in its own harness is measuring pairs, not models, which is why the paper lists the harness for every in-house benchmark and reports best-across-harnesses on Terminal-Bench.</p>` },
+
+/* ---------- infra ---------- */
+"pp": { k:"parallelism", t:"Pipeline parallelism", h:`
+<p>Split the layers across GPUs: stage 0 holds layers 1–12, stage 1 holds 13–24, and so on. Activations flow forward down the pipeline and gradients flow back.</p>
+<p>The naive version leaves most GPUs idle — the "bubble" — so the batch is chopped into micro-batches that flow through in a staggered schedule (1F1B: one forward, one backward, interleaved). Virtual stages cut the bubble further by giving each GPU several non-contiguous chunks of layers.</p>
+<p>The residual annoyance: activation memory is unevenly distributed, because early stages must hold more in-flight micro-batches during warmup. K3 offloads activations to the memory of <em>other</em> pipeline ranks to level it out. Bubbles are also where the vision encoder's work gets hidden.</p>` },
+
+"ep": { k:"parallelism", t:"Expert parallelism", h:`
+<p>Experts are spread across GPUs, so every MoE layer becomes two collective operations: an <b>all-to-all dispatch</b> sending each token to the ranks holding its chosen experts, and an <b>all-to-all combine</b> bringing the results back.</p>
+<p>This is the defining cost of large MoE training. It's latency-sensitive, its volume depends on the router's choices, and it sits directly in the critical path — hence overlapping it with computation, and hence the intense interest in <span class="ref" data-note="load-balance">balance</span>: with a skewed router, every rank waits for the slowest one.</p>
+<p><span class="ref" data-note="moonep">MoonEP</span> is K3's answer, and its most useful property is not raw speed but determinism — perfect balance makes every shape static.</p>` },
+
+"zero": { k:"parallelism", t:"ZeRO sharding", h:`
+<p>In plain data parallelism every GPU keeps a full copy of the optimizer state, gradients and parameters — enormously redundant, since Adam-style states are several times the model size.</p>
+<p>ZeRO shards them by stage: <b>ZeRO-1</b> shards optimizer states, <b>ZeRO-2</b> also shards gradients, <b>ZeRO-3</b> shards parameters too (gathering them just in time). Each stage saves more memory and adds more communication.</p>
+<p>K3 uses ZeRO-1 across data-parallel ranks plus pipeline ZeRO-2 gradient sharding, and goes a step further by parking the sharded gradients in <b>CPU memory</b> — keeping a double grad buffer on the GPU to reduce across ranks, then accumulating into the CPU shards.</p>` },
+
+"cp": { k:"parallelism", t:"Context parallelism", h:`
+<p>When one sequence is a million tokens, it doesn't fit on a single device no matter how you shard the weights. Context parallelism splits the <em>sequence</em> across devices, so each rank owns a contiguous segment.</p>
+<p>For softmax attention this requires ranks to exchange key–value blocks whose size grows with sequence length (Ring Attention and friends). For linear attention, the shared context is a fixed-size state — much cheaper in principle, but only if you can compose segments correctly, which for KDA takes <span class="ref" data-note="kcp">a specific trick</span>.</p>` },
+
+"kcp": { k:"the trick", t:"KDA Context Parallelism", h:`
+<p>Prior context-parallel schemes for linear attention exploit additivity: each rank computes the state its own tokens generate starting from zero, and you sum across preceding ranks to get the incoming state. Sum is associative, so the whole thing parallelises.</p>
+<p>That fails for KDA, because the <span class="ref" data-note="delta-rule">delta rule</span> applies a token-dependent matrix <span class="m">M_t</span> to the incoming state before writing. The effect of a segment now <em>depends on</em> what entered it, so a locally-computed-from-zero state isn't enough.</p>
+<p>KCP splits each segment into two locally computable pieces: a cumulative transition <span class="m">M = Π M_t</span> that will act on whatever arrives, and a state <span class="m">S̃</span> generated locally from zero. Then</p>
+<div class="eq">S_out = S̃ + M · S_in</div>
+<p>which is an affine map — and affine maps <b>compose associatively</b>. So each rank computes its (M, S̃) pair from local tokens only, one fixed-size all-gather exchanges them, and every rank reconstructs its incoming state by a <span class="ref" data-note="prefix-scan">prefix scan</span> over the fragments. Communication is independent of sequence length.</p>
+<div class="aside"><span class="tag">Pattern to remember</span>"Can't parallelise this recurrence" usually means "haven't found the right associative representation yet". Lifting a state update to an affine map is one of the standard moves.</div>` },
+
+"prefix-scan": { k:"algorithms", t:"Prefix scan and associativity", h:`
+<p>A prefix scan (or "scan") turns a sequence of elements and an associative operator into all its running combinations. Because the operator is associative, the work can be re-bracketed into a tree: log n depth instead of n serial steps.</p>
+<p>This is one of the load-bearing ideas of parallel computing, and it is why every efficient linear-attention or SSM implementation goes looking for an associative form of its state update — Blelloch scans in Mamba, the <span class="ref" data-note="chunkwise">chunkwise</span> form inside a device, <span class="ref" data-note="kcp">KCP</span> across devices. Same theorem, three scales.</p>` },
+
+"moonep": { k:"systems", t:"MoonEP and redundant experts", h:`
+<p>Perfect balance is achieved by <b>replicating</b> hot experts: a rank that would be overloaded hands part of its traffic to a copy placed elsewhere for that step. The question is how many copies you must budget for.</p>
+<p>MoonEP's contribution is a bound. With E experts and EP size R, at most <span class="m">E/R</span> redundant experts per rank always suffice for a feasible balanced plan — and the appendix proves the bound is essentially tight. Since the worst case is bounded, you can reserve exactly that many slots and <b>planning never fails</b>. Prior systems presets a redundancy budget or a per-rank token cap and must stop training when no feasible plan exists inside it.</p>
+<p>Three payoffs follow from guaranteed balance:</p>
+<ul>
+<li><b>Static shapes.</b> Every rank receives exactly S×K tokens, so shapes are known ahead of time and the per-layer host–device synchronisation disappears.</li>
+<li><b>Zero-copy communication.</b> The planner precomputes each token's destination, so tokens land directly in expert-grouped positions with no intermediate copies, and the buffer is a fixed S×K instead of S×K×R.</li>
+<li><b>Predictability.</b> Step time stops depending on what the router happened to do.</li>
+</ul>
+<p>The exact optimum is computed offline by <span class="ref" data-note="ilp">integer linear programming</span> as a reference; online, a GPU planning kernel gets near-optimal results at negligible cost.</p>` },
+
+"ilp": { k:"method", t:"ILP as an offline oracle", h:`
+<p>Integer linear programming solves optimisation problems with linear objectives and integer variables — exactly right for placement and assignment, and far too slow to run inside a training step.</p>
+<p>The pattern K3 uses is a good one to steal: solve representative instances <em>offline</em> with the exact method, then design a fast heuristic and measure it against those known optima. You get a principled quality bar instead of "it seems fine", and you learn where the heuristic actually degrades.</p>` },
+
+"recompute": { k:"memory", t:"Activation memory: recompute, quantize, offload", h:`
+<p>Backprop needs the forward activations, and at this scale storing them is the binding memory constraint. Three levers, each trading a different resource:</p>
+<ul>
+<li><b>Recomputation</b> — throw activations away and recompute them in the backward pass. Costs FLOPs.</li>
+<li><b>Quantization</b> — store them in <span class="ref" data-note="fp8">FP8</span>. Costs a little precision.</li>
+<li><b>Offload</b> — move them to CPU memory or to another rank's memory. Costs bandwidth.</li>
+</ul>
+<p>K3's contribution is architectural rather than novel: a unified activation manager where every saved tensor names a storage policy via a lightweight annotation, so the three can be composed per tensor and the choices live outside the model code. Cheap elementwise ops get recomputation; most activations get FP8 plus offload.</p>` },
+
+"fp8": { k:"numerics", t:"Block-wise FP8", h:`
+<p>FP8 halves activation memory and doubles effective bandwidth relative to BF16, but has so little dynamic range that a single tile-wide scale factor is hopeless in the presence of <span class="ref" data-note="activation-outliers">outliers</span>.</p>
+<p>Block-wise scaling fixes it: split the tensor into small blocks and give each its own scale, so one extreme value only compresses its own neighbourhood. This is the same principle behind the MX formats used for <span class="ref" data-note="qat">MXFP4 weights</span> — the format's real content is the granularity of the shared exponent, not the bit width.</p>` },
+
+"external-kv": { k:"RL infrastructure", t:"External KV cache pool", h:`
+<p>Co-located RL runs rollout and training on the same GPUs, which forces a fight for memory: the rollout's KV cache must survive to the next iteration, and training wants everything.</p>
+<p>K3 decouples retention from residency with a <b>write-back</b> policy: active decoding blocks stay in GPU memory, and idle prefixes are written to a CPU DRAM pool only when evicted, then prefetched before reuse. Write-back rather than write-through, so you only pay DRAM and bandwidth for prefixes that actually left the hot path.</p>
+<p>KDA states are offloaded and prefetched together with their corresponding MLA blocks so the two stay lifecycle-aligned — the same joint-management principle as the serving-side <span class="ref" data-note="prefix-cache">prefix cache</span>. To free the DRAM, training weights and optimizer states are pushed to NVMe between iterations.</p>` },
+
+"prefix-cache": { k:"serving", t:"Prefix caching in a hybrid model", h:`
+<p>Agents send nearly the same 400K-token prefix over and over with a few thousand new tokens appended. Recomputing it is orders of magnitude more expensive than reusing it, so serving stacks hash cached blocks and match new requests against them.</p>
+<p>The hybrid architecture breaks the standard scheme. Block-hash caching needs one block size shared by all layers, and a hit is only usable if the <span class="ref" data-note="kda">KDA</span> state at that boundary was saved. But KDA state is one large matrix per sequence, so checkpoints are only affordable at sparse boundaries — forcing blocks of 1024–6144 tokens, at which granularity caching barely ever hits.</p>
+<p>The fix decouples the granularities: hash on fine 512-token <b>hash blocks</b> inside MLA pages while keeping the coarse physical block as the allocation unit, and save KDA checkpoints only at a sparse subset of those hash endpoints (typically conversation-turn boundaries). Lookup then runs in two stages — match MLA by chained hash, then require a KDA checkpoint at the candidate boundary in every cache group — and the hit is the longest boundary satisfying both.</p>
+<p>Three consistency rules make it safe under concurrency: pin every hit block across all groups before allocating anything; exclude blocks whose copy hasn't landed yet; and evict checkpoints atomically across groups, so a checkpoint is hittable in all groups or none.</p>` },
+
+"consistent-hash": { k:"serving", t:"Consistent hashing for cache affinity", h:`
+<p>Sessions are routed to the cluster holding their prefix cache, because moving a million-token cache over inter-cluster links is far slower than recomputing locally. But affinity means a cluster failure kills every session bound to it.</p>
+<p>Consistent hashing assigns each session a primary and a pre-assigned secondary cluster. When the primary fails, the secondary takes over — it has none of the cache and must re-prefill — but because the hash spreads secondaries uniformly across the fleet, that re-prefill burden lands on many clusters instead of one. Cache locality in the common case; bounded blast radius in the failure case.</p>` },
+
+"ttft": { k:"serving", t:"TTFT and mixed traffic", h:`
+<p>Time to first token is the latency users actually feel. It's dominated by prefill — processing the prompt — so it scales with input length.</p>
+<p>Production traffic mixes 2K-token chats with 1M-token agent jobs: three orders of magnitude of per-request cost. Any capacity plan built on an "average request" breaks, and the characteristic failure is a burst of long requests saturating the machines while short requests queue behind them, wrecking TTFT for everyone.</p>
+<p>K3's answer is budget-based admission control: each request class gets its own slice of capacity, so long-context traffic can consume at most its own share and cannot degrade the SLOs of other classes.</p>` },
+
+"pd-disagg": { k:"serving", t:"Prefill/decode disaggregation", h:`
+<p>Prefill is compute-bound and parallel over the whole prompt; decode is memory-bandwidth-bound and strictly sequential. Running both on the same machines means neither runs well and long prefills stall short decodes.</p>
+<p>Disaggregation puts them on separate node pools, with the KV cache transferred between them. Each pool can then use different parallelism settings, which is why K3's cache layout stores each head's state contiguously — the byte stream per head is self-contained, so re-layout for a different tensor-parallel degree happens on the transfer path with no GPU-side reshuffling.</p>` },
+
+/* ---------- evaluation ---------- */
+"benchmarks": { k:"how to read section 6", t:"Reading benchmark tables honestly", h:`
+<p>Things worth holding in mind while reading any table like Table 2:</p>
+<ul>
+<li><b>Harness matters.</b> Agentic scores measure a model–<span class="ref" data-note="harness">harness</span> pair. Different rows may use different scaffolding.</li>
+<li><b>Settings matter.</b> Every K3 number here is at max <span class="ref" data-note="effort">effort</span>, temperature 1.0. Baselines are at their own maximum settings.</li>
+<li><b>Provenance matters.</b> Several columns are cited from third-party leaderboards as of specific dates, and <span class="ref" data-note="elo">Elo scores</span> drift as matches accumulate.</li>
+<li><b>Footnotes matter.</b> The tables record refusals and fallbacks per benchmark — for some in-house suites, 10–14 tasks out of 80 were refused by a baseline model, which materially changes what its score means.</li>
+<li><b>Self-reported.</b> These are the developer's own runs of their own model. The most valuable evidence in the section is the parts where they lose.</li>
+</ul>
+<p>The in-house results are more informative than the public ones precisely because they're less optimisable — and the paper names its weak spots (agent behaviour, multi-role enterprise collaboration, research-level reasoning) rather than burying them.</p>` },
+
+"elo": { k:"metric", t:"Elo ratings", h:`
+<p>Borrowed from chess. Rather than scoring a model in isolation, you show pairs of outputs to judges, record which wins, and fit ratings so that the difference between two ratings predicts the win probability: 100 points ≈ 64%, 400 points ≈ 91%.</p>
+<p>It suits tasks with no ground truth — writing, knowledge work, web design — because relative preference is far easier to elicit reliably than an absolute score.</p>
+<p>Its weaknesses are worth remembering: ratings are only meaningful within a pool, they drift as new matches accumulate, and they inherit whatever the judges reward — which for human raters often includes length, formatting and confidence.</p>` },
+
+"passk": { k:"metric", t:"pass@k", h:`
+<p>pass@k is the probability that at least one of k sampled attempts is correct. pass@1 measures reliability; pass@5 measures whether the capability is present at all.</p>
+<p>The gap between them is diagnostic. A big gap means the model <em>can</em> do it but doesn't do it consistently — a search or selection problem, often fixable with verification or more <span class="ref" data-note="test-time">test-time compute</span>. A small gap at a low score means the capability is genuinely absent.</p>
+<p>Read K3's ZeroBench-main line with this in mind: 23.0 pass@5 alone, 41.0 with a Python tool, which says a lot about where the bottleneck sits.</p>` },
+
+"cyber": { k:"safety", t:"The cyber-capability evaluation", h:`
+<p>Section 6.2.2 is unusual in a capabilities report: an explicit two-tier assessment of offensive security ability.</p>
+<p><b>Tier 1 (vulnerability discovery)</b> — finding genuine, reproducible bugs in current code, framed as defensive research. Across dozens of deployed systems the model surfaced hundreds of candidates, ~70% of reviewed findings confirmed genuine, including 16 previously unknown vulnerabilities across six projects, with two Linux kernel examples described in detail.</p>
+<p><b>Tier 2 (exploit development)</b> — turning a vulnerability into a working exploit, the tier most relevant to misuse. 14 of 36 in-house tasks solved (vs 8 for GLM-5.2), but 10 of those 14 came from the easier user-space track; on the kernel track neither model solved three quarters of the tasks. The suite is calibrated: every task is human-solvable, at roughly 15 expert-hours each.</p>
+<p>Two things are notable beyond the numbers. The comparison excludes Anthropic and OpenAI frontier models because they refuse these tasks — a refusal that is itself a safety property, and one that makes cross-lab measurement genuinely hard. And an independent joint assessment by the UK AI Security Institute and NIST's CAISI is cited as reaching consistent conclusions, including arbitrary code execution on 0 of 41 end-to-end tasks.</p>
+<p>The authors call their result a lower bound on capability, to be revisited each model update. That framing is right: evaluations measure elicitation, not potential.</p>` },
+
+"cost": { k:"economics", t:"Score per dollar", h:`
+<p>The final evaluation axis is cost, plotted as score against per-task inference dollars — the frame that matters once several models are "good enough" and the question becomes which to deploy at volume.</p>
+<p>The reported picture: best BrowseComp score at about half GPT-5.6 Sol's per-task cost and an order of magnitude below the Claude models at max effort; within 50 Elo of GPT-5.6 Sol on GDPval-AA at 13% lower cost; 4 points behind Fable 5 on the internal coding bench at 38% of its cost.</p>
+<p>Two mechanisms drive this and both are in this paper: <span class="ref" data-note="active-params">sparse activation</span> means a 2.8T model costs like a 100B one per token, and <span class="ref" data-note="effort">effort levels</span> let you buy accuracy incrementally rather than always paying for maximum thinking.</p>
+<div class="aside"><span class="tag">Caveat</span>API prices are business decisions, not costs. A price-based frontier can move without anything technical changing.</div>` }
+
+};
+
+/* ------------------------------------------------------------------ *
+ * Stack machinery
+ * ------------------------------------------------------------------ */
+const stackEl   = document.getElementById('stack');
+const innerEl   = document.getElementById('stackInner');
+const emptyEl   = document.getElementById('empty');
+const trailEl   = document.getElementById('trail');
+const isMobile  = () => window.matchMedia('(max-width:900px)').matches;
+
+let trail = [];   // array of note ids, index 0 = depth 1
+
+/* Any ref pointing at a missing note becomes plain text — no dead ends. */
+document.querySelectorAll('.ref').forEach(el => {
+  if(!NOTES[el.dataset.note]) el.classList.remove('ref');
+});
+
+function esc(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function render(focusLast){
+  innerEl.querySelectorAll('.card').forEach(n => n.remove());
+  emptyEl.style.display = trail.length ? 'none' : 'block';
+
+  trail.forEach((id, i) => {
+    const n = NOTES[id];
+    const card = document.createElement('section');
+    card.className = 'card';
+    card.dataset.d = Math.min(i + 1, 7);
+    card.dataset.id = id;
+    card.innerHTML =
+      '<div class="depth-rail"><b></b><i></i></div>' +
+      '<div class="card-head">' +
+        '<div class="lvl">' + String(i + 1).padStart(2,'0') + '</div>' +
+        '<h3><span class="kicker">' + esc(n.k || '') + '</span>' + esc(n.t) + '</h3>' +
+        '<button class="card-close" type="button" aria-label="Close this note and everything below it">✕</button>' +
+      '</div>' +
+      '<div class="card-body">' + n.h + '</div>';
+
+    card.querySelector('.card-close').addEventListener('click', () => { trail = trail.slice(0, i); render(true); });
+    card.querySelectorAll('.ref').forEach(r => {
+      if(!NOTES[r.dataset.note]){ r.classList.remove('ref'); return; }
+      r.setAttribute('role','button');
+      r.setAttribute('tabindex','0');
+      r.addEventListener('click', () => push(r.dataset.note, i + 1));
+      r.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); push(r.dataset.note, i + 1); } });
+    });
+    innerEl.appendChild(card);
+  });
+
+  // trail / breadcrumbs
+  trailEl.innerHTML = '';
+  trail.forEach((id, i) => {
+    if(i) { const s = document.createElement('span'); s.className = 'sep'; s.textContent = '›'; trailEl.appendChild(s); }
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'crumb' + (i === trail.length - 1 ? ' last' : '');
+    b.textContent = NOTES[id].t;
+    b.addEventListener('click', () => { trail = trail.slice(0, i + 1); render(true); });
+    trailEl.appendChild(b);
+  });
+
+  // reflect open state on every ref in the document
+  document.querySelectorAll('.ref').forEach(r => r.classList.toggle('on', trail.includes(r.dataset.note)));
+
+  if(focusLast && trail.length){
+    const last = innerEl.lastElementChild;
+    if(last) last.scrollIntoView({behavior: matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth', block:'start'});
+  }
+  if(isMobile()) stackEl.classList.toggle('open', trail.length > 0);
+}
+
+function push(id, depth){
+  if(!NOTES[id]) return;
+  trail = trail.slice(0, depth);
+  if(trail[trail.length - 1] !== id) trail.push(id);
+  render(true);
+}
+
+/* paper-side refs open at depth 0 (i.e. a fresh stack) */
+document.querySelectorAll('#paper .ref').forEach(r => {
+  r.setAttribute('role','button');
+  r.setAttribute('tabindex','0');
+  r.addEventListener('click', () => push(r.dataset.note, 0));
+  r.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); push(r.dataset.note, 0); } });
+});
+
+document.getElementById('clearBtn').addEventListener('click', () => { trail = []; render(false); stackEl.classList.remove('open'); });
+document.getElementById('sheetClose').addEventListener('click', () => stackEl.classList.remove('open'));
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape' && trail.length){ trail.pop(); render(true); if(!trail.length) stackEl.classList.remove('open'); }
+});
+
+render(false);
+</script>
+</body>
+</html>
