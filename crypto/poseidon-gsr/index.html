@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Poseidon GSR — an annotated reading</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --ink:#161621;
+  --mute:#6b6880;
+  --faint:#918ea6;
+  --paper:#f4f3f6;
+  --panel:#e6e4ed;
+  --card:#ffffff;
+  --iris:#4a3ac8;
+  --iris-wash:#e2ddfb;
+  --teal:#0e7c7b;
+  --rule:#d5d2e0;
+  --colw:min(580px,100vw);
+  --notew:min(470px,100vw);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{
+  font-family:"Source Serif 4",Georgia,serif;
+  color:var(--ink);
+  background:var(--panel);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+.mono{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace}
+
+/* ---------- top rail: the reading path as a proof context ---------- */
+#rail{
+  flex:0 0 auto;
+  display:flex;align-items:center;gap:0;
+  height:42px;padding:0 14px;
+  background:var(--ink);color:#c9c6dc;
+  font-family:"JetBrains Mono",monospace;font-size:11.5px;
+  overflow-x:auto;overflow-y:hidden;white-space:nowrap;
+  scrollbar-width:none;
+}
+#rail::-webkit-scrollbar{display:none}
+#rail .src{color:#8f8ba8}
+#rail .home{color:#8f8ba8;text-decoration:none;border-right:1px solid var(--rule);padding-right:12px;margin-right:2px}
+#rail .home:hover{color:var(--iris)}
+.crumb{
+  background:none;border:0;padding:2px 6px;margin:0;
+  color:#c9c6dc;font:inherit;cursor:pointer;border-radius:3px;
+}
+.crumb:hover{background:#2a2a3d;color:#fff}
+.crumb.head{color:#fff;background:#31305c}
+.sep{color:#5a5878;padding:0 1px}
+.turn{color:#a79df5;padding:0 7px;font-size:13px}
+#railhint{margin-left:auto;color:#6f6c8c;padding-left:20px}
+
+/* ---------- horizontal stack ---------- */
+#stack{
+  flex:1;min-height:0;
+  display:flex;align-items:stretch;
+  overflow-x:auto;overflow-y:hidden;
+  scroll-snap-type:x proximity;
+  scroll-behavior:smooth;
+}
+.col{
+  flex:0 0 var(--notew);
+  height:100%;overflow-y:auto;overscroll-behavior:contain;
+  scroll-snap-align:start;
+  border-right:1px solid var(--rule);
+  background:var(--panel);
+  animation:slide .22s cubic-bezier(.2,.7,.3,1);
+}
+.col.paper{flex-basis:var(--colw);background:var(--paper)}
+@keyframes slide{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  .col{animation:none}
+  #stack{scroll-behavior:auto}
+}
+
+/* ---------- paper column ---------- */
+.paper .body{padding:34px 40px 70px;max-width:580px}
+.eyebrow{
+  font-family:"JetBrains Mono",monospace;font-size:10.5px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--faint);
+}
+h1{
+  font-family:"JetBrains Mono",monospace;
+  font-size:27px;line-height:1.18;font-weight:700;
+  letter-spacing:-.02em;margin:10px 0 6px;
+}
+h1 .sub{display:block;font-weight:400;font-size:16px;color:var(--mute);margin-top:8px;letter-spacing:0}
+.authors{font-size:14.5px;color:var(--mute);margin:14px 0 0;line-height:1.5}
+.authors b{color:var(--ink);font-weight:600}
+.headrule{height:1px;background:var(--ink);opacity:.85;margin:22px 0 26px}
+h2{
+  font-family:"JetBrains Mono",monospace;
+  font-size:14px;font-weight:700;letter-spacing:-.01em;
+  margin:44px 0 4px;padding-top:14px;border-top:1px solid var(--rule);
+}
+h2 .num{color:var(--iris);margin-right:10px}
+h3{
+  font-family:"JetBrains Mono",monospace;
+  font-size:12px;font-weight:500;color:var(--mute);
+  margin:26px 0 2px;letter-spacing:0;
+}
+p{font-size:16.5px;line-height:1.62;margin:12px 0}
+.lead{font-size:17px;line-height:1.6}
+.runin{
+  font-family:"JetBrains Mono",monospace;font-size:12.5px;font-weight:500;
+  color:var(--iris);letter-spacing:-.01em;margin-right:3px;
+}
+.abstract{
+  font-size:15.5px;line-height:1.58;color:#2c2b3d;
+  border-left:2px solid var(--iris);padding-left:18px;margin:0 0 8px;
+}
+.abstract p{font-size:inherit;line-height:inherit}
+ul{padding-left:20px;margin:12px 0}
+li{font-size:16px;line-height:1.55;margin:7px 0}
+
+/* clickable source tokens */
+.tok{
+  cursor:pointer;
+  background-image:linear-gradient(transparent 60%,var(--iris-wash) 60%);
+  border-bottom:1px solid rgba(74,58,200,.28);
+  transition:background-color .15s,box-shadow .15s;
+  border-radius:1px;
+}
+.tok:hover{background-color:rgba(74,58,200,.13)}
+.tok.open{
+  background-image:none;background-color:rgba(74,58,200,.13);
+  box-shadow:inset 0 -2px 0 var(--iris);border-bottom-color:transparent;
+}
+.tok:focus-visible{outline:2px solid var(--iris);outline-offset:2px}
+
+/* blocks */
+.block{
+  background:#fff;border:1px solid var(--rule);border-radius:2px;
+  padding:14px 16px;margin:18px 0;
+}
+.block .lab{
+  font-family:"JetBrains Mono",monospace;font-size:10.5px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--teal);
+  display:block;margin-bottom:7px;
+}
+.block p{font-size:15.5px;margin:8px 0}
+.block p:first-of-type{margin-top:0}
+.block p:last-child{margin-bottom:0}
+pre{
+  font-family:"JetBrains Mono",monospace;font-size:12.5px;line-height:1.55;
+  background:#1c1b2a;color:#d6d3ea;padding:13px 15px;border-radius:3px;
+  overflow-x:auto;margin:16px 0;
+}
+pre .kw{color:#a79df5}
+pre .str{color:#7fd1c4}
+pre .cm{color:#6f6c8c}
+code{font-family:"JetBrains Mono",monospace;font-size:.87em;background:rgba(74,58,200,.09);padding:1px 4px;border-radius:2px}
+table{border-collapse:collapse;width:100%;margin:18px 0;font-size:13px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--rule)}
+th{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);font-weight:500}
+td.n{font-family:"JetBrains Mono",monospace;color:var(--mute)}
+td.nw{white-space:nowrap}
+.yes{color:var(--teal);font-weight:700}
+.no{color:#a8324a;font-weight:700}
+.refs{font-size:13px;color:var(--mute);line-height:1.5}
+
+/* ---------- note columns ---------- */
+.note .inner{padding:0 0 60px}
+.notehead{
+  position:sticky;top:0;z-index:2;
+  background:var(--panel);border-bottom:1px solid var(--rule);
+  padding:13px 20px 11px;display:flex;align-items:baseline;gap:9px;
+}
+.notehead .depth{
+  font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--faint);
+}
+.notehead .t{
+  font-family:"JetBrains Mono",monospace;font-size:13px;font-weight:500;
+  flex:1;line-height:1.3;
+}
+.notehead .t .turnstile{color:var(--iris);margin-right:7px}
+.closebtn{
+  font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--faint);
+  background:none;border:1px solid var(--rule);border-radius:2px;
+  padding:2px 6px;cursor:pointer;
+}
+.closebtn:hover{color:var(--ink);border-color:var(--mute)}
+.notebody{padding:18px 20px 0}
+.notebody p{font-size:15px;line-height:1.6;margin:11px 0}
+.notebody p:first-child{margin-top:0}
+.notebody ul{padding-left:19px}
+.notebody li{font-size:14.5px;line-height:1.55}
+.notebody h4{
+  font-family:"JetBrains Mono",monospace;font-size:11px;font-weight:500;
+  color:var(--mute);letter-spacing:.04em;margin:20px 0 -4px;
+}
+.notebody pre{font-size:12px}
+.notebody .block{background:#fbfaff}
+.fig{
+  background:#fff;border:1px solid var(--rule);border-radius:2px;
+  padding:14px 12px 10px;margin:16px 0;
+}
+.fig svg{display:block;width:100%;height:auto}
+.fig figcaption{
+  font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--faint);
+  margin-top:9px;line-height:1.45;
+}
+.kv{font-family:"JetBrains Mono",monospace;font-size:12px;line-height:1.7;color:#33324a;margin:14px 0}
+.kv b{color:var(--iris);font-weight:500}
+.rule-list{font-family:"JetBrains Mono",monospace;font-size:12px;line-height:1.8;margin:14px 0;color:#33324a}
+
+/* svg text defaults */
+svg text{font-family:"JetBrains Mono",monospace;font-size:9.5px;fill:#33324a}
+svg .lbl{fill:var(--mute);font-size:8.5px}
+svg .em{fill:var(--iris)}
+
+::-webkit-scrollbar{height:9px;width:9px}
+::-webkit-scrollbar-thumb{background:#c3bfd4;border-radius:6px}
+::-webkit-scrollbar-track{background:transparent}
+
+@media (max-width:760px){
+  :root{--colw:100vw;--notew:100vw}
+  #stack{scroll-snap-type:x mandatory}
+  .paper .body{padding:26px 22px 60px}
+  .notebody{padding:16px 18px 0}
+  h1{font-size:23px}
+}
+</style>
+</head>
+<body>
+
+<nav id="rail">
+  <a class="home" href="../../index.html" title="All annotated papers">←&nbsp;papers</a>
+  <span class="src">gsr.paper</span>
+  <span id="crumbs"></span>
+  <span id="railhint">click any <span style="color:#a79df5">underlined</span> phrase</span>
+</nav>
+
+<main id="stack">
+<section class="col paper" id="col-paper">
+<div class="body">
+
+<div class="eyebrow">eprint 2026/1692 · august 2026</div>
+<h1>From Round Skipping to S-Box Skipping
+  <span class="sub">Attacking Poseidon's Partial Layer via Subspace Restriction</span>
+</h1>
+<p class="authors"><b>Amit Singh Bhati</b> · <b>Sundas Tariq</b> · <b>Tomer Ashur</b><br>3MI Labs, Leuven &nbsp;·&nbsp; COSIC, KU Leuven</p>
+<div class="headrule"></div>
+
+<div class="abstract">
+<p><span class="tok" data-n="poseidon">Poseidon</span> [Grassi, Khovratovich, Rechberger, Roy, and Schofnegger; USENIX'21] is an <span class="tok" data-n="ao">arithmetization-oriented (AO)</span> hash function designed to be efficient in real-world <span class="tok" data-n="zk-apps">zero-knowledge (ZK) applications</span>. We present GSR, a generalized <span class="tok" data-n="sbox-skipping">S-box skipping gadget</span> that absorbs a single initial full round and $t-2k$ <span class="tok" data-n="partial-rounds">partial rounds</span> without increasing the <span class="tok" data-n="algebraic-degree">polynomial degree</span> of the Poseidon polynomial system with state size $t$ and input-output constraints $2k$.</p>
+<p>By restricting the subspace of the total constraints satisfying solutions, independent to the round-constants and <span class="tok" data-n="mds">MDS matrix</span> selection, the <span class="tok" data-n="distinguisher">distinguisher</span> expends <span class="tok" data-n="dof">input degrees of freedom</span> to <span class="tok" data-n="linearize">linearize</span> the internal state transitions where the dense algebraic mixing usually occurs. This maps a computationally infeasible polynomial system into a bounded, low-degree <span class="tok" data-n="zero-dim">ideal</span> parameterized by $k$ free variables.</p>
+<p>We show how to use the gadget to construct a probability 1 distinguisher over $t-2k+1$ rounds of Poseidon. We then show how this distinguisher can be used as a basis for <span class="tok" data-n="interp">interpolation-based attacks</span>. We go on to present experimental solutions to the <span class="tok" data-n="cico">CICO-1 problem</span> over 28 out of 31 rounds and CICO-2 problem over 25 out of 31 rounds in the setting set by the <span class="tok" data-n="eth-poseidon">Ethereum Poseidon initiative</span> (i.e., using the <span class="tok" data-n="koalabear">KoalaBear field</span> with $t = 24$ and $\alpha = 3$). Crucially, since the subspace restriction approach is tuned only by $t$ and $k$, our results apply to the Poseidon structure regardless of the choice of round constants, MDS matrix, S-box exponent $\alpha$, or field size $p$.</p>
+</div>
+
+<h2><span class="num">1</span>Introduction</h2>
+<p class="lead">The algebraic security of Poseidon has been extensively studied through <span class="tok" data-n="groebner">Gröbner bases analyses</span> and ideal degree reduction techniques based on <span class="tok" data-n="round-skipping">round skipping</span> (which is a form of S-box skipping). Bariant, Bouvier, Leurent, and Perrin [6] introduced a reparametrization of the first two full rounds of Poseidon (excluding the second round's MDS matrix) that eliminates their degree contribution, reducing the remaining Constrained-Input Constrained-Output (CICO-1) problem to <span class="tok" data-n="univariate">univariate root finding</span> on all remaining rounds.</p>
+
+<p>Reevaluating the initial security analysis given by the designers of Poseidon, Ashur, Buschman, and Mahzoun [3] refined the Gröbner bases complexity bounds for both Poseidon and Poseidon2. Subsequently, Grassi, Koschatko, and Rechberger [13] refined Gröbner basis attacks using <span class="tok" data-n="subspace-trail">finite subspace trails</span> to linearize some partial rounds of fixed Poseidon, Poseidon2, and Neptune instances. Bak, Bariant, Boeuf, Briaud, Øygarden, and Phanse [4] presented the <span class="tok" data-n="freelunch">CheapLunch framework</span> for multiple-output CICO-$k$ systems, proving that the ideal degree for Poseidon is upper bounded by $\alpha^{k\cdot R_F + R_P}$ without round skipping.</p>
+
+<p>Recent efforts have further improved algebraic attacks on round-reduced instances. Reduced-round Poseidon and Poseidon2 <span class="tok" data-n="bounties">bounty challenges</span> were solved using resultants and univariate root finding [5]. Additionally, Zhao, Sanso, Vitto, and Ding [19] enhanced <span class="tok" data-n="graeffe">Graeffe-based root-finding</span> techniques over NTT-friendly fields, while Sanso and Vitto [17] proposed the <span class="tok" data-n="annihilation">degree annihilation attack</span>, which linearizes the first two partial rounds for the round-reduced KoalaBear instance $(t,\alpha,R_F,R_P) = (16,3,6,8)$ in the CICO-2 setting.</p>
+
+<p>Most recently, Vitto [18] constructed a <span class="tok" data-n="slipway">constrained input family alongside a round-constant-dependent MDS matrix</span> to establish a finite trail that holds the active S-box coordinate constant across partial rounds. By applying a controlled reparametrization over the initial full rounds, the author bypassed 18 out of 28 rounds for CICO-2 on the KoalaBear instance $(t,\alpha,R_F,R_P) = (16,3,8,20)$. Consequently, this approach reduces the effective algebraic degree from $\alpha^{R_F+R_P} = 3^{28}$ down to $\alpha^{R_F-4+R_P-14} = 3^{10} = 59049$.</p>
+
+<p><span class="runin">Our Contribution.</span> We introduce GSR, a novel subspace restriction approach that generalizes S-box skipping for generic CICO-$k$ configurations ($k \geq 1$). Unlike prior methods confined to initial full rounds, GSR explicitly targets the S-boxes inside the partial rounds, neutralizing the <span class="tok" data-n="dense-mixing">dense algebraic mixing</span> in the middle of the permutation. Our core contributions are threefold:</p>
+<ul>
+<li>We formulate a generalized S-box skipping gadget that deterministically absorbs $2t-2k$ total S-boxes across one initial full round and $t-2k$ partial rounds, strictly bounding the polynomial degree and variable count of the resulting algebraic ideal.</li>
+<li>For CICO-1 against Poseidon's KoalaBear instance ($t = 24$) with $(R_{f_0}, R_p, R_{f_1}) = (1,23,4)$, i.e., <span class="tok" data-n="margin">28 out of the recommended 31 rounds</span>, we show a simple recovery of multiple input-output states using optimized univariate solvers like the <span class="tok" data-n="cz">Cantor-Zassenhaus algorithm</span> [15, 8].</li>
+<li>For CICO-2 against Poseidon's KoalaBear instance ($t = 24$) with $(R_{f_0}, R_p, R_{f_1}) = (1,20,4)$, i.e., 25 out of the recommended 31 rounds, we show an optimized CICO solution recovery using <span class="tok" data-n="resultant">Sylvester matrix-based resultants</span> [9, 11], projecting the bivariate system into a single dimension and completely bypassing the expected exponential memory bottlenecks of traditional multivariate Gröbner bases [7, 10].</li>
+<li>We extend this approach to $k > 2$ via a trivial pairwise resultant sequence (Sylvester matrix), generalizing the attack vector without relying on Gröbner basis extraction bottlenecks.</li>
+<li>We implemented the attack into an optimized C++ algebraic solver and successfully recovered valid input-output states of CICO-1 solutions over 28 out of 31 rounds, and the CICO-2 solutions over 25 out of 31 rounds, in negligible time for Poseidon's KoalaBear instance ($t = 24$).</li>
+</ul>
+
+<h2><span class="num">2</span>Formal Specification of Poseidon</h2>
+<p>Let $\mathbb{F}_p$ be a prime field of size $p$. The Poseidon permutation [12] operates on a state vector $S \in \mathbb{F}_p^t$, where the state size $t = c + r$ is the sum of the <span class="tok" data-n="sponge">capacity $c$ and the rate $r$</span>. The non-linear layer utilizes the <span class="tok" data-n="sbox">S-box $S(x) = x^\alpha$</span>, where $\gcd(\alpha, p-1) = 1$. The linear layer applies a <span class="tok" data-n="mds">Maximum Distance Separable (MDS) matrix</span> $M \in \mathbb{F}_p^{t \times t}$ generated according to the conditions in [1].</p>
+
+<p>A single round function (e.g., at position $i$) $R^{(i)}$ consists of the addition of <span class="tok" data-n="shake">round constants $C^{(i)} \in \mathbb{F}_p^t$</span>, the S-box layer, and the matrix multiplication $M$. The permutation is structured in <span class="tok" data-n="hades">three consecutive phases</span>:</p>
+<ol>
+<li><b>Initial Full Rounds ($R_{f_0}$):</b> The S-box is applied to all $t$ elements of the state.</li>
+<li><b>Partial Rounds ($R_p$):</b> The S-box is applied solely to the first state element at the index 0; all other elements pass through the <span class="tok" data-n="partial-rounds">identity function</span>.</li>
+<li><b>Final Full Rounds ($R_{f_1}$):</b> The S-box is again applied to all $t$ elements of the state.</li>
+</ol>
+<p class="refs">Poseidon instances in [12] are defined with $R_{f_0} = R_{f_1}$ and a single notation $R_F$ is used to denote their sum.</p>
+
+<h2><span class="num">3</span>Degrees of Freedom and Subspace Restriction</h2>
+<p><span class="runin">CICO-$k$ problem.</span> A standard <span class="tok" data-n="cico">CICO-$k$ problem</span> requires finding an initial state $S_{in} \in \mathbb{F}_p^t$ such that some predetermined $k$ input words and some $k$ predetermined output words of the permutation match predefined constants (typically zero). Because $k$ words of $S_{in}$ are strictly constrained, the system possesses $t-k$ free variables at the input, referred to as <span class="tok" data-n="dof">input degrees of freedom (DoF)</span>.</p>
+
+<p><span class="runin">Subspace Restriction.</span> A generic polynomial system representing the full cipher possesses a high polynomial degree and therefore is expected to exhibit a large solution space over the algebraic closure. By actively consuming degrees of freedom, i.e., fixing certain variables to strategically chosen constants (let's say, $\Delta$s), the global solution space can be artificially restricted, as a trade-off to easily find at least one valid solution.</p>
+
+<p>More specifically, fixing the input of non-linear components i.e., S-boxes, allows us to evaluate them as <span class="tok" data-n="linearize">lower-degree (e.g., linear) transformations</span>. The objective then is to expend available DoFs to linearize partial rounds S-boxes (and therefore the partial rounds themselves), ensuring the restricted system is uniquely equivalent to a smaller, low-degree polynomial ideal. Hence, it becomes relatively easy to solve and find at least one valid solution.</p>
+
+<p>Note that iterating over multiple $\Delta$ tuples allows us to generate <span class="tok" data-n="multi-target">distinct CICO-$k$ solutions each at the same order of cost</span>, facilitating multi-target or collision attacks.</p>
+
+<h2><span class="num">4</span>State of the Art</h2>
+<p>The application of subspace restriction in Poseidon cryptanalysis was formalized by Bariant, Bouvier, Leurent, and Perrin [6], who utilized all DoFs in the hash's input to <span class="tok" data-n="round-skipping">skip the first two full rounds</span> of the cipher (excluding the second round's MDS matrix) for CICO-1 ($k = 1$).</p>
+
+<p>In a CICO-1 instance, the attacker possesses $t-1$ input DoFs. Bariant, Bouvier, Leurent, and Perrin's methodology imposes constraints that force specific intermediate S-box inputs or outputs to cancel out during the MDS mixing. Consequently, the non-linear transition $x \mapsto x^\alpha$ acts as an <span class="tok" data-n="affine">affine transformation</span>, circumventing degree growth in the resulting polynomials.</p>
+
+<p>Mathematically, their technique expends $t-2k$ of the available $t-k$ input DoFs to bypass exactly $2t-k$ S-boxes across the initial full rounds. While $2t-k$ represents the theoretical maximum number of skipped S-boxes under this formulation, the attack remains structurally confined to the initial full round layers. Once the parameterization enters the partial layer, the MDS matrix <span class="tok" data-n="dense-mixing">densely mixes</span> the remaining unconstrained variables, causing the polynomial degree to grow exponentially over all remaining unskipped rounds, i.e., partial rounds still contribute exponentially to the overall polynomial degree.</p>
+
+<h2><span class="num">5</span>The GSR Gadget: Targeting S-Boxes in the Partial Layer</h2>
+<p>We generalize round skipping into <span class="tok" data-n="sbox-skipping">S-box skipping</span> at two fronts: 1) we allow it to target the intermediate partial round S-boxes rather than exclusively the initial full rounds, and 2) in order to skip an S-box, we set the variable before it to a constant rather than introducing a new linear constraint among the variables of that round which depends not only on the MDS matrix and round constants but also limits the choices of $k$ to very small values. Consequently, we make the skipping free of these parameters and therefore applicable to arbitrary $k$ values. For context, existing skipping results [6, 17] have been limited to $k \in \{1,2\}$.</p>
+
+<p>While [6] looks to maximize the absolute number of skipped S-boxes ($2t-k$) by skipping almost two full rounds, we reallocate the $t-2k$ consumable DoFs to skip the first full round and $t-2k$ partial rounds resulting in a polynomial system of much lower degree.</p>
+
+<p>Overall, GSR skips $2t-2k$ total S-boxes; exactly $k$ fewer S-boxes than [6]'s theoretical bound. However, by projecting the constraints into the partial rounds, the dense algebraic mixing in the middle of the cipher is neutralized, where the <span class="tok" data-n="where-degree-lives">degree growth per variable is otherwise harder to contain</span>, strictly bounding the polynomial degree of the final system.</p>
+
+<h3>5.1 Setup</h3>
+<p>We start by <span class="tok" data-n="reparam">shifting the geometric reference point</span>. Rather than parameterizing $S_{in}$, we parameterize $X_1 \in \mathbb{F}_p^t$, defined as the state immediately before the partial round.</p>
+
+<h3>5.2 Forward Linearization of the Partial Round S-Boxes</h3>
+<p>We expend $t-2k$ of the $t-k$ initial DoFs to trace $X_1$ forward. Let $S^{(r)}$ denote the $r$th partial-round's state before the addition of the round constant $C^{(r)}$ generated using a random seed in the <span class="tok" data-n="shake">SHAKE-256 hash function</span> [16]. For each of the first $t-2k$ partial rounds, let $\delta^{(r)} \in \mathbb{F}_p$ be an arbitrary constant chosen by the attacker. We constrain the input to the single active S-box at index 0 to equal $\delta^{(r)}$:</p>
+<p class="kv" style="text-align:center">$(S^{(r)} + C^{(r)})[0] = \delta^{(r)}$</p>
+<p>Consequently, the S-box output is deterministically the field element $(\delta^{(r)})^\alpha$. The transition to round $r+1$ is given by the <span class="tok" data-n="affine">affine mapping</span>:</p>
+<p class="kv" style="text-align:center">$S^{(r+1)} = M \cdot \left( S^{(r)} + C^{(r)} - \delta^{(r)}\cdot e_0 + (\delta^{(r)})^\alpha \cdot e_0 \right)$</p>
+<p>where $e_0$ is the standard basis vector and $M$ is the MDS matrix that satisfies the three criteria given in [14]. Because the mapping is affine, every state $S^{(r)}$ with $1 \le r \le t-2k$ remains an affine combination of the variables in $X_1$. Enforcing this condition for $t-2k$ consecutive partial rounds generates exactly $t-2k$ strictly linear constraints on $X_1$.</p>
+
+<p>Varying the target tuple $\Delta = (\delta^{(1)}, \ldots, \delta^{(t-2k)})$ generates distinct solution subspaces. The union of these <span class="tok" data-n="partition">disjoint affine subspaces spans the original, unconstrained solution space</span>.</p>
+
+<h3>5.3 Backward Linearization of the Initial Full Round</h3>
+<p>To prepend GSR with an additional full round we consider the $t$ variables of $X_1$. The $k$ predefined input constraints of the CICO-$k$ problem must be satisfied. Tracing backward, the state before the first MDS matrix is $M^{-1}X_1$. The state at the beginning of the round is:</p>
+<p class="kv" style="text-align:center">$S_{in}[j] = (M^{-1}X_1)[j]^{1/\alpha} - C^{(0)}[j]$</p>
+<p>To enforce the constraint $S_{in}[j] = 0$ for $k$ indices, we require:</p>
+<p class="kv" style="text-align:center">$(M^{-1}X_1)[j] = (C^{(0)}[j])^\alpha$</p>
+<p>Evaluating the known constant $(C^{(0)}[j])^\alpha$ <span class="tok" data-n="alpha-inverse">circumvents the non-linear compositional inverse power map $x^{1/\alpha}$</span> of the S-box. This yields exactly $k$ more strictly linear equations in terms of $X_1$.</p>
+
+<p>In total, we consume $t-2k$ DoFs in $X_1$ and leave it reduced to a linear combination of $k$ variables. Since there are exactly $k$ output constraints to satisfy, the system becomes <span class="tok" data-n="zero-dim">determined (i.e., a zero-dimensional ideal)</span> and is expected to have one valid solution.</p>
+
+<h2><span class="num">6</span>Using GSR to Attack Poseidon</h2>
+<p>By successfully bounding the polynomial degree through the GSR gadget, we translate the Poseidon's CICO-$k$ solution recovery problem into a highly constrained system of low-degree multivariate polynomials. This system only consists of the remaining unskipped partial and full rounds. Depending on the subspace dimension $k$, we deploy specific algebraic techniques to extract the roots, thereby recovering the complete initial state.</p>
+
+<h3>6.1 A $k$-Dimensional Distinguishing Attack for $t-2k+1$ Rounds</h3>
+<p>We have imposed $t-2k$ forward constraints and $k$ backward constraints on $X_1$. The total number of linear constraints is $k + (t-2k) = t-k$. Subtracting these constraints from the $t$ variables of $X_1$ leaves $k$ degrees of freedom. The solution space of $X_1$ forms a $k$-dimensional affine subspace:</p>
+<p class="kv" style="text-align:center">$X_1(v_1,\ldots,v_k) = Z_{base} + \sum_{i=1}^{k} v_i B_i$</p>
+<p>where $Z_{base} \in \mathbb{F}_p^t$ is a particular solution to the linear system, <span class="tok" data-n="null-space">$B_i \in \mathbb{F}_p^t$ are the basis vectors of the null space</span>, and $v_i$ are the $k$ free variables. This parameterization traverses one full round and $t-2k$ partial rounds with a polynomial degree of exactly 1. Solving this system requires negligible effort and forms a <span class="tok" data-n="distinguisher">distinguisher for the middle $t-2k+1$ rounds</span> of Poseidon. To the best of our knowledge, this is the longest distinguisher found for Poseidon.</p>
+<p class="refs">Antonio Sanso revealed to the authors in private communications that he had also identified a similar distinguisher a couple of months earlier but did not pursue it on account of the distinguisher being "not interesting".</p>
+
+<h3>6.2 Attacking More Rounds and with $k \ge 1$</h3>
+<p>The GSR gadget allows, in simple terms, to express the last few rounds of the permutation as a linear combination of the rounds preceding the gadget. Effectively, as virtually all real-world instances of Poseidon consist of eight full rounds with a variable number of partial rounds, the gadget shrinks the original polynomial system significantly. Formally, the degree of the polynomial system reduces from $\alpha^{R_{f_0}+R_p+R_{f_1}}$ to $\alpha^{R_{f_0}+R_p+R_{f_1}-1-t+2k}$ using GSR.</p>
+
+<h3>6.2.1 Univariate Interpolation ($k = 1$, $R_{f_0} = 1$)</h3>
+<p>For $k = 1$ and $R_{f_0} = 1$, the target is parameterized by a single variable $v_1$, forming a univariate polynomial $f(v_1) = 0$. The forward cipher trajectory is evaluated from $S_{in}$ over $d+1$ numeric points in $\mathbb{F}_p$, and $f(v_1)$ is recovered via <span class="tok" data-n="interp">Lagrange interpolation</span>. The roots are extracted using the <span class="tok" data-n="cz">Cantor-Zassenhaus algorithm</span>. The degree of this univariate polynomial is strictly bounded by the remaining unskipped rounds i.e., $d \le \alpha^{R_p + R_{f_1} - t + 2k}$.</p>
+
+<h3>6.2.2 Bivariate Interpolation using Sylvester matrix ($k = 2$, $R_{f_0} = 1$)</h3>
+<p>For $k = 2$ and $R_{f_0} = 1$, the CICO system is parameterized by exactly two free variables, yielding a bivariate polynomial system $g_1(v_1,v_2) = 0$ and $g_2(v_1,v_2) = 0$ representing the two output constraints. Both $g_1$ and $g_2$ have degree $d \le \alpha^{R_p+R_{f_1}-t+2k}$. Such a system can be solved using the determinant of the <span class="tok" data-n="resultant">Sylvester matrix</span> [9, 11]. By treating $g_1$ and $g_2$ as polynomials in $v_2$ with coefficients in $\mathbb{F}_p[v_1]$, we compute the determinant of their Sylvester matrix (denoted $\mathrm{Res}(g_1,g_2,v_1)$), which by definition is equal to zero iff the two polynomials share common roots. This eliminates $v_2$, producing a univariate polynomial $\mathrm{Res}(g_1,g_2,v_1) = 0$ of degree $\le d^2$. Standard <span class="tok" data-n="univariate">univariate root-finding algorithms</span> can then be used to extract the valid candidates for $v_1$. Back-substituting these roots into $g_1$ yields a smaller $d$-degree univariate polynomial in $v_2$ which can be similarly solved, allowing us to perfectly recover the constrained initial state.</p>
+
+<h3>6.2.3 Generalizing $k > 2$ via Trivial Pairwise Resultants</h3>
+<p>For generalized instances where $k > 2$ and $R_{f_0} = 1$, we can iteratively apply the pairwise resultants over the output constraint equations. Let the $k$ output equations be $g_1, g_2, \ldots, g_k$ defined over $k$ variables $v_1, \ldots, v_k$. We group them in pairs and compute the resultants to eliminate $v_k$:</p>
+<p class="kv" style="text-align:center">$h_i = \mathrm{Res}(g_i, g_{i+1}, v_k)$ &nbsp; for $i \in \{1, \ldots, k-1\}$</p>
+<p>This yields $k-1$ equations in $k-1$ variables. Recursively applying this trivial pairwise elimination collapses the system into a single univariate polynomial in $v_1$. The roots are then extracted using the Cantor-Zassenhaus algorithm and iteratively back-substituted to solve the entire system.</p>
+
+<p>However, we note that this trivial approach, despite being simple and computationally stable, is far from being optimal. The expected degree of the $k$-variate system with each polynomial of degree $d \le \alpha^{R_p+R_{f_1}-t+2k}$ is $\le d^k$, but this method will result in a univariate polynomial with degree <span class="tok" data-n="doubly-exp">$d^{2^{k-1}}$</span>. Therefore for a given multivariate system defining a CICO-$k$ instance, one can find a threshold on $k$ after which the required complexity exceeds that of <span class="tok" data-n="brute-force">exhaustive search</span>.</p>
+
+<h2><span class="num">7</span>Complexity Analysis and Comparison</h2>
+<p>We evaluate the computational advantage of the GSR gadget by analyzing the maximum algebraic degree of the polynomials in the reduced system. We contrast the complexity of solving the system naively (without partial round subspace restrictions) against our GSR-optimized approach.</p>
+
+<h3>7.1 Theoretical Degree Bounds</h3>
+<p><span class="runin">Baseline (Naive).</span> Without S-box skipping in the partial rounds, the dense MDS matrix mixing ensures the degree rises by a factor of $\alpha$ per round. For $R_{f_0} = 1$, the maximum degree bounds strictly to $d_{naive} = \alpha^{1+R_p+R_{f_1}}$.</p>
+<p><span class="runin">GSR.</span> Applying the subspace restriction maintains a degree of exactly 1 through $R_{f_0}$ and the first $t-2k$ partial rounds. Degree growth only activates in the remaining unskipped partial rounds and the final full rounds. Thus, the degree is strictly truncated to $d_{opt} = \alpha^{R_p+R_{f_1}-t+2k}$.</p>
+
+<h3>7.2 Complexities of the Used Techniques</h3>
+<p>For the root extraction of a $d$-degree univariate polynomial with coefficients in $\mathbb{F}_p$, we use the Cantor-Zassenhaus [8, 15] algorithm that has practical bit complexity of $O(d^2 \log p)$ in runtime and $O(d \log p)$ in memory.</p>
+<p>For two given $d$-degree multivariate polynomials over the same set of variables, the cost of computing their Sylvester matrix and defining the determinant as another $d^2$-degree multivariate polynomial (with strictly one less variable) is $\tilde{O}(d^3)$ bit operations in runtime and $O(d^2 \log p)$ bits in memory [11]. Iteratively, if we nest Sylvester resultant computation from $k$ $k$-variate polynomials all the way down to one univariate polynomial, the degree of the polynomial blows from $d$ to $d^{2^{k-1}}$ and cost of solving for a root becomes time $O(d^{2^k}\log p)$ and memory $O(d^{2^{k-1}}\log p)$.</p>
+
+<h3>7.3 State-of-the-Art vs. GSR on KoalaBear</h3>
+<p>We instantiate the bounds using Poseidon's KoalaBear parameters adopted by the Ethereum ecosystem: $p \approx 2^{31}$, $\alpha = 3$, and $t = 24$. Table 1 contrasts the computational complexity of extracting valid CICO solutions between the state-of-the-art approaches (no partial layer subspace restriction) and our proposed GSR framework using the combination of Sylvester resultant and Cantor-Zassenhaus, denoted <span class="tok" data-n="sycz">SyCZ</span>. Paired entries $(x,y)$ denote the time and memory bit-complexities, respectively.</p>
+
+<table>
+<tr><th>Target</th><th>$(R_{f_0},R_p,R_{f_1})$</th><th>Brute-force</th><th>SyCZ (baseline)</th><th>SyCZ (GSR)</th></tr>
+<tr><td class="nw">CICO-1 (k=1)</td><td class="n">(1, 23, 4) = 28</td><td class="n">$2^{31}$</td><td class="n">$(2^{93.7}, 2^{49.3})$</td><td class="n"><b class="yes">$(2^{20.8}, 2^{12.9})$</b></td></tr>
+<tr><td class="nw">CICO-2 (k=2)</td><td class="n">(1, 23, 4) = 28</td><td class="n">$2^{62}$</td><td class="n">$(2^{182.5}, 2^{93.7})$</td><td class="n"><b class="yes">$(2^{49.3}, 2^{27.1})$</b></td></tr>
+<tr><td class="nw">CICO-2 (k=2)</td><td class="n">(1, 20, 4) = 25</td><td class="n">$2^{62}$</td><td class="n">$(2^{163.4}, 2^{84.2})$</td><td class="n"><b class="yes">$(2^{30.3}, 2^{17.6})$</b></td></tr>
+<tr><td class="nw">CICO-3 (k=3)</td><td class="n">(1, 18, 4) = 23</td><td class="n">$2^{93}$</td><td class="n">$(2^{296.6}, 2^{150.8})$</td><td class="n"><b class="yes">$(2^{55.7}, 2^{30.3})$</b></td></tr>
+<tr><td class="nw">CICO-4 (k=4)</td><td class="n">(1, 16, 4) = 21</td><td class="n">$2^{124}$</td><td class="n">$(2^{537.5}, 2^{271.2})$</td><td class="n"><b class="yes">$(2^{106.4}, 2^{55.7})$</b></td></tr>
+<tr><td class="nw">CICO-5 (k=5)</td><td class="n">(1, 14, 2) = 17</td><td class="n">$2^{155}$</td><td class="n">$(2^{867.2}, 2^{436.1})$</td><td class="n"><b class="yes">$(2^{106.4}, 2^{55.7})$</b></td></tr>
+<tr><td class="nw">CICO-6 (k=6)</td><td class="n">(1, 12, 1) = 14</td><td class="n">$2^{186}$</td><td class="n">$(2^{1425.1}, 2^{715.0})$</td><td class="n"><b class="yes">$(2^{106.4}, 2^{55.7})$</b></td></tr>
+<tr><td class="nw">CICO-7 (k=7)</td><td class="n">(1, 10, 1) = 12</td><td class="n">$2^{217}$</td><td class="n">$(2^{2439.4}, 2^{1222.2})$</td><td class="n"><b class="yes">$(2^{207.8}, 2^{106.4})$</b></td></tr>
+</table>
+<p class="refs">Table 1: Complexity comparison of CICO-$k$ solution recovery on Poseidon's KoalaBear instance ($t = 24$, $\alpha = 3$). For $k \ge 5$, $R_{f_1}$ is successively reduced to 2 and then to 1 to show the $R_{f_1}$ threshold where SyCZ-with-GSR remains faster than the respective $2^{31k}$ brute-force bound.</p>
+
+<p><span class="runin">Analysis for $k=1$.</span> The baseline algebraic degree scales up to $d_{naive} = 3^{28} \approx 2^{44.4}$, giving $(2^{93.7}, 2^{49.3})$ — heavily inferior to the simple $2^{31}$ brute-force cost. With GSR we systematically skip $t-2k = 22$ partial rounds, leaving only $23-22 = 1$ active partial round. The degree bound drops sharply to $d_{opt} = 3^{1+4} = 3^5 \approx 2^{7.9}$, and the extraction complexity to just $(2^{20.8}, 2^{12.9})$, <span class="tok" data-n="practical">executing entirely in milliseconds</span>.</p>
+
+<p><span class="runin">Analysis for $k=2$.</span> For the $(1,20,4)$ instance, root finding without structural restriction projects a huge degree of $(3^{25})^2 = 3^{50} \approx 2^{79.3}$ for the Sylvester resultant univariate polynomial, dictating $(2^{163.4}, 2^{84.2})$. Against a $2^{62}$ brute-force cost, the naive approach therefore provides no practical attack vector. With GSR we absorb exactly $t-2k = 20$ partial rounds, leaving $20-20 = 0$ active partial rounds. The equation degree drops to $d_{opt} = 3^{0+4} = 3^4 \approx 2^{6.3}$, and the Sylvester matrix projection computes the roots with a final complexity of $(2^{30.3}, 2^{17.6})$ — an attack that runs within a minute and handily beats generic $2^{62}$ brute-force.</p>
+
+<h2><span class="num">8</span>Conclusion</h2>
+<p>In this paper, we introduced Generalized S-Box Skipping via Subspace Restriction (GSR), a novel algebraic technique that significantly advances the cryptanalysis of the Poseidon hash function. By strategically targeting S-boxes within the partial layer rather than confining the restriction to the initial full rounds, GSR effectively neutralizes the dense MDS mixing that typically drives exponential polynomial degree growth.</p>
+
+<p>This structural exploitation allowed us to translate the mathematically challenging CICO-$k$ problem into tractable, low-degree polynomial systems. We practically demonstrated the power of this approach by recovering valid CICO-1 and CICO-2 solutions over 28 and 25 rounds, respectively, (out of the recommended 31) of Poseidon's KoalaBear instance in negligible time.</p>
+
+<p>In summary, GSR exposes a critical vulnerability in the partial layer of Poseidon (and related AO ciphers), <span class="tok" data-n="what-it-means">emphasizing the need for a rigorous reevaluation of its algebraic security margins</span>.</p>
+
+<p><span class="runin">Responsible Disclosure.</span> This work was supported by the Ethereum Foundation Grant program through grant number FY26-2457 and the VLAIO Baekeland mandate under project number HBC.2024.0256. The results were disclosed to the Ethereum Foundation prior to their public dissemination.</p>
+
+<p class="refs" style="margin-top:34px">Rendered as an annotated reading of ePrint 2026/1692. Prose is the authors'; the side notes are commentary and are not part of the paper.</p>
+
+</div>
+</section>
+</main>
+
+<script>
+const R = String.raw;
+
+/* ------------------------------------------------------------------ *
+ * Diagram helpers. Everything is inline SVG on a 400-wide canvas so it
+ * scales with the note column. Text styling comes from `svg text`,
+ * `.lbl` (muted, small) and `.em` (iris) in the stylesheet.
+ * ------------------------------------------------------------------ */
+const IRIS = '#4a3ac8', RULE = '#d5d2e0', INK = '#33324a',
+      RED  = '#a8324a', WASH = '#e2ddfb', PAPER = '#f4f3f6';
+
+const fig = (inner, cap, h) =>
+  `<div class="fig"><svg viewBox="0 0 400 ${h}">${inner}</svg>` +
+  (cap ? `<figcaption>${cap}</figcaption>` : '') + `</div>`;
+
+const bx = (x, y, w, h, t, o = {}) =>
+  `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2" fill="${o.fill || '#fff'}" stroke="${o.stroke || IRIS}"` +
+  (o.dash ? ` stroke-dasharray="${o.dash}"` : '') + `/>` +
+  (t ? `<text x="${x + w / 2}" y="${y + h / 2 + 3.4}" text-anchor="middle"${o.cls ? ` class="${o.cls}"` : ''}>${t}</text>` : '');
+
+const ar = (x1, y1, x2, y2, o = {}) => {
+  const c = o.stroke || INK, a = Math.atan2(y2 - y1, x2 - x1), s = 5.5;
+  const px = x2 - s * Math.cos(a - 0.42), py = y2 - s * Math.sin(a - 0.42);
+  const qx = x2 - s * Math.cos(a + 0.42), qy = y2 - s * Math.sin(a + 0.42);
+  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c}"` +
+    (o.dash ? ` stroke-dasharray="${o.dash}"` : '') + `/>` +
+    (o.open ? '' : `<polygon points="${x2},${y2} ${px.toFixed(1)},${py.toFixed(1)} ${qx.toFixed(1)},${qy.toFixed(1)}" fill="${c}"/>`);
+};
+
+const tx  = (x, y, t, cls) => `<text x="${x}" y="${y}"${cls ? ` class="${cls}"` : ''}>${t}</text>`;
+const ctx_ = (x, y, t, cls) => `<text x="${x}" y="${y}" text-anchor="middle"${cls ? ` class="${cls}"` : ''}>${t}</text>`;
+/* keep a centred label of half-width `half` inside the 400-wide canvas */
+const fit = (x, half) => Math.max(half + 4, Math.min(396 - half, x));
+
+/* message sequence chart — parties are lifelines, rows are arrows or notes */
+const msc = (parties, rows, cap) => {
+  const n = parties.length, pad = Math.max(46, 200 / n), span = (400 - 2 * pad) / (n - 1 || 1);
+  const X = i => pad + span * i, top = 8, hb = 20, y0 = top + hb + 14;
+  const rh = r => r.note ? 24 : (r.sub ? 30 : 24);
+  const H = y0 + rows.reduce((a, r) => a + rh(r), 0) + 6;
+  const bw = Math.min(94, span - 8);
+  let out = '';
+  parties.forEach((p, i) => out += `<line x1="${X(i)}" y1="${top + hb}" x2="${X(i)}" y2="${H - 4}" stroke="${RULE}"/>`);
+  parties.forEach((p, i) => out += bx(X(i) - bw / 2, top, bw, hb, p, { fill: i === parties.length - 1 && p.match(/attack|adversar/i) ? '#f7e6ea' : '#fff' }));
+  let y = y0;
+  rows.forEach(r => {
+    if (r.note !== undefined) {
+      const nw = Math.min(392, r.note.length * 5.15 + 18), x = fit(X(r.at), nw / 2);
+      out += `<rect x="${(x - nw / 2).toFixed(1)}" y="${y + 1}" width="${nw.toFixed(1)}" height="17" rx="2" fill="${PAPER}" stroke="${RULE}"/>` + ctx_(x, y + 13, r.note, 'lbl');
+    } else {
+      const a = X(r.from), b = X(r.to), d = b > a ? 1 : -1, m = (a + b) / 2;
+      out += ar(a + 6 * d, y + 15, b - 6 * d, y + 15, { stroke: r.att ? RED : INK, dash: r.dash });
+      out += ctx_(fit(m, r.label.length * 2.9), y + 10, r.label, r.att ? 'em' : '');
+      if (r.sub) out += ctx_(fit(m, r.sub.length * 2.6), y + 26, r.sub, 'lbl');
+    }
+    y += rh(r);
+  });
+  return fig(out, cap, H);
+};
+
+/* a trace: a row of entry boxes, left to right */
+const strip = (cells, cap, lab) => {
+  const x0 = lab ? 78 : 6, cw = (394 - x0) / cells.length, sub = cells.some(c => c.s);
+  let out = lab ? tx(6, 26, lab, 'lbl') : '';
+  cells.forEach((c, i) => {
+    const f = c.k === 'ghost' ? WASH : c.k === 'att' ? '#f7e6ea' : c.k === 'dim' ? PAPER : '#fff';
+    const s = c.k === 'att' ? RED : c.k === 'dim' ? RULE : IRIS;
+    out += bx(x0 + i * cw + 1.5, 10, cw - 3, 24, c.t, { fill: f, stroke: s });
+    if (c.s) out += ctx_(fit(x0 + i * cw + cw / 2, c.s.length * 2.6), 47, c.s, 'lbl');
+  });
+  return fig(out, cap, sub ? 56 : 42);
+};
+
+/* left-to-right boxes joined by arrows */
+const flow = (items, cap) => {
+  const n = items.length, gap = 20, bw = (388 - gap * (n - 1)) / n, sub = items.some(i => i.s);
+  let out = '';
+  items.forEach((it, i) => {
+    const x = 6 + i * (bw + gap);
+    out += bx(x, 10, bw, 32, it.t, { fill: it.hi ? WASH : '#fff', dash: it.dash, stroke: it.stroke });
+    if (it.s) out += ctx_(fit(x + bw / 2, it.s.length * 2.6), 56, it.s, 'lbl');
+    if (i < n - 1) out += ar(x + bw + 3, 26, x + bw + gap - 3, 26, items[i].edge || {});
+  });
+  return fig(out, cap, sub ? 64 : 50);
+};
+
+/* concentric sets, outermost first */
+const nest = (layers, cap) => {
+  let out = '';
+  layers.forEach((l, i) => {
+    const x = 8 + i * 24, y = 8 + i * 18, w = 384 - i * 48, h = 122 - i * 36;
+    out += `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="${l.fill || 'none'}" stroke="${l.stroke || IRIS}"` +
+      (l.dash ? ` stroke-dasharray="${l.dash}"` : '') + `/>` + tx(x + 7, y + 14, l.t, l.cls);
+  });
+  return fig(out, cap, 138);
+};
+
+/* free-form node/edge diagram; nodes are {x,y,t,w,hi}, edges [from,to,opts] */
+const dag = (nodes, edges, cap, H = 130) => {
+  let out = '';
+  edges.forEach(([a, b, o = {}]) => {
+    const A = nodes[a], B = nodes[b], aw = A.w || 66, bw = B.w || 66;
+    out += o.up
+      ? ar(A.x + aw / 2, A.y, B.x + bw / 2, B.y + 22, o)
+      : ar(A.x + aw / 2, A.y + 20, B.x + bw / 2, B.y - 2, o);
+  });
+  nodes.forEach(n => out += bx(n.x, n.y, n.w || 66, 20, n.t, { fill: n.hi ? WASH : '#fff', stroke: n.s, dash: n.dash }));
+  return fig(out, cap, H);
+};
+
+const NOTES = {
+
+"poseidon": {t:"Poseidon, in one screen", h: R`
+<p>Poseidon is a hash function built from a <span class="tok" data-n="sponge">sponge</span> over a permutation on $t$ field elements of $\mathbb{F}_p$. The permutation follows the <span class="tok" data-n="hades">HADES</span> strategy: alternate a non-linear layer ($x \mapsto x^\alpha$ on some or all words) with a linear layer (multiply by a fixed <span class="tok" data-n="mds">MDS matrix</span>), adding round constants each round.</p>
+${strip([
+  {t:'RF/2',s:'full',k:'dim'},{t:'RP',s:'partial'},{t:'RF/2',s:'full',k:'dim'}
+],'Three phases. Full rounds at the ends give fast diffusion of non-linearity; the long cheap middle is where all the round count lives — and where GSR strikes.','structure')}
+<p>The unusual part is the middle: partial rounds apply the S-box to <em>one</em> word only. That is a deliberate cost optimisation — see <span class="tok" data-n="partial-rounds">why partial rounds exist</span> — and it is exactly the structural concession this paper exploits.</p>
+<p>Poseidon is everywhere in the ZK ecosystem: Merkle trees in zkRollups, Filecoin, Mina, Semaphore, Ethereum's proposed state commitment. Its security argument against algebraic attacks is a <span class="tok" data-n="margin">round-count margin</span> justified by the claim that the polynomial system describing the permutation is too big and too high-degree to solve.</p>
+<p>The original paper: Grassi, Khovratovich, Rechberger, Roy, Schofnegger, <i>Poseidon: A New Hash Function for Zero-Knowledge Proof Systems</i>, USENIX Security 2021.</p>
+`},
+
+"ao": {t:"Arithmetization-oriented primitives", h: R`
+<p>A normal hash function (SHA-256, Keccak) is designed for CPUs: XORs, rotations, byte tables. Inside a <span class="tok" data-n="zk-apps">SNARK circuit</span> those operations are catastrophic, because the circuit's native language is addition and multiplication in a large prime field $\mathbb{F}_p$. Expressing a 32-bit XOR means bit-decomposing both operands — hundreds of constraints per operation, tens of thousands per hash.</p>
+<p>An <em>arithmetization-oriented</em> (AO) primitive inverts the design target: minimise the number of field multiplications, and accept everything else. That is why AO hashes look like $x^5$ and matrix multiplication rather than rotate-and-XOR.</p>
+${flow([
+  {t:'SHA-256',s:'~27k constraints'},
+  {t:'Poseidon',s:'~200 constraints',hi:1}
+],'Rough orders of magnitude for one compression inside a R1CS circuit. Two orders of magnitude is why the ZK ecosystem accepted a young, thinly-cryptanalysed primitive.')}
+<p>The trade-off is that the whole function is now a low-degree algebraic object over a single field — which is precisely what makes <span class="tok" data-n="groebner">algebraic cryptanalysis</span> viable. Traditional hash functions are hard to attack algebraically because writing them as polynomials is already hopeless. AO hashes hand you the polynomial system for free.</p>
+<p>The family is a moving target: MiMC, GMiMC, Rescue, Poseidon, Poseidon2, Neptune, Griffin, Anemoi, Monolith. Several have been broken or weakened. This paper is one more datapoint in that pattern.</p>
+`},
+
+"zk-apps": {t:"Why a hash function's shape is a circuit cost", h: R`
+<p>In a SNARK, the prover commits to a computation expressed as polynomial constraints. The dominant cost metric is the number of multiplication gates (R1CS constraints, or Plonk rows). Additions and multiplications by constants are essentially free; general multiplications are not.</p>
+<p>An $x^\alpha$ S-box with $\alpha = 3$ costs 2 constraints ($y = x\cdot x$, $z = y \cdot x$); $\alpha = 5$ costs 3. A $t \times t$ MDS multiplication costs nothing beyond linear combinations. So a Poseidon round with a full S-box layer costs $\approx 2t$ or $3t$ constraints, and a partial round costs $2$ or $3$.</p>
+<div class="kv">
+<b>full round</b> — $t$ S-boxes &nbsp;·&nbsp; expensive &nbsp;·&nbsp; strong non-linear diffusion<br>
+<b>partial round</b> — 1 S-box &nbsp;·&nbsp; nearly free &nbsp;·&nbsp; weak non-linearity, relies on $M$ to spread it
+</div>
+<p>Every Merkle path in a zkRollup is 20–30 hashes; every state proof is thousands. Shaving constraints per hash compounds directly into proving time, so designers are under real pressure to push $R_P$ up and $R_F$ down. That pressure is what created the attack surface.</p>
+`},
+
+"sponge": {t:"Rate, capacity, and what CICO buys an attacker", h: R`
+<p>The sponge splits the $t$-word state into a <em>rate</em> part $r$ (where message words are absorbed and output words squeezed) and a <em>capacity</em> part $c$ (never touched by the outside). Security against generic attacks is governed by $c$.</p>
+${strip([
+  {t:'r₀'},{t:'r₁'},{t:'c₀',k:'dim'},{t:'c₁',k:'dim'},{t:'c₂',k:'dim'}
+],'The attacker controls the rate words and observes rate words of the output. The capacity words are fixed at initialisation and are what a preimage attack must hit.','state t = r + c')}
+<p>This is why <span class="tok" data-n="cico">CICO</span> is the right abstraction to attack: "some input words are fixed, some output words are fixed" is exactly the shape of a sponge preimage or a zero-sum condition on the capacity. A CICO-$k$ solver over the full-round permutation is a preimage attack machine; a CICO solver over a round-reduced permutation is a statement about how much margin is left.</p>
+`},
+
+"hades": {t:"The HADES strategy and its bet", h: R`
+<p>HADES (Grassi, Lüftenegger, Rechberger, Rotaru, Schofnegger) is the design strategy behind Poseidon. Its claim is that you can defend against two different families of attacks with two different kinds of rounds:</p>
+<ul>
+<li><b>Full rounds</b> handle <em>statistical</em> attacks — differential, linear, truncated differentials. A handful of full rounds at each end makes any statistical trail hopeless.</li>
+<li><b>Partial rounds</b> handle <em>algebraic</em> attacks — they cost almost nothing but each still multiplies the algebraic degree by $\alpha$, so a long partial middle is supposed to push the polynomial degree out of reach.</li>
+</ul>
+${strip([
+  {t:'f',k:'dim'},{t:'f',k:'dim'},{t:'f',k:'dim'},{t:'f',k:'dim'},
+  {t:'p'},{t:'p'},{t:'p'},{t:'p'},{t:'p'},{t:'p'},
+  {t:'f',k:'dim'},{t:'f',k:'dim'},{t:'f',k:'dim'},{t:'f',k:'dim'}
+],'A schematic HADES permutation: RF/2 full rounds, RP partial rounds, RF/2 full rounds. Grey = full (t S-boxes), white = partial (1 S-box).','rounds')}
+<p>The bet is that "degree $\alpha^{R_P}$" is a real barrier. This paper, like <span class="tok" data-n="round-skipping">round skipping</span> before it, attacks the bet directly: the degree bound is only a bound on <em>generic</em> parameterisations of the input. If the attacker re-parameterises the input so that specific S-box inputs are constants, those rounds contribute degree 1, not $\alpha$ — and the "$\alpha^{R_P}$" claim quietly evaporates for the rounds you can constrain.</p>
+`},
+
+"sbox": {t:"Why $x^\\alpha$, and why $\\gcd(\\alpha, p-1) = 1$", h: R`
+<p>The S-box is a power map on the field. The condition $\gcd(\alpha, p-1) = 1$ makes $x \mapsto x^\alpha$ a <em>bijection</em> on $\mathbb{F}_p$: since $\mathbb{F}_p^\times$ is cyclic of order $p-1$, raising to a power coprime to $p-1$ permutes it, and $0 \mapsto 0$. Without that, the round function would not be invertible and the construction would not be a permutation.</p>
+<p>$\alpha$ is chosen as the smallest such exponent, because circuit cost is $\lceil \log_2 \alpha \rceil + \mathrm{hw}(\alpha) - 1$ multiplications. For the BLS12-381 scalar field $\alpha = 5$; for <span class="tok" data-n="koalabear">KoalaBear</span> $\alpha = 3$.</p>
+<div class="kv">
+forward: $x \mapsto x^\alpha$ &nbsp; — degree $\alpha$, cheap<br>
+inverse: $x \mapsto x^{1/\alpha \bmod (p-1)}$ &nbsp; — <span class="tok" data-n="alpha-inverse">degree $\approx p$, useless in a circuit</span>
+</div>
+<p>That asymmetry is central. The forward direction is low-degree, so the whole permutation is a low-degree polynomial system going forward — which is what makes <span class="tok" data-n="algebraic-degree">degree accounting</span> the natural security measure and the natural attack target.</p>
+`},
+
+"alpha-inverse": {t:"The one place the inverse S-box appears — and how it is dodged", h: R`
+<p>In §5.3 the attacker parameterises $X_1$, the state <em>after</em> the first full round, and needs to trace backward to check the CICO input constraints. Backward means applying $x \mapsto x^{1/\alpha}$, which as a polynomial over $\mathbb{F}_p$ has degree on the order of $p$ — writing the constraint that way would be catastrophic.</p>
+<p>The trick is that the constraint is $S_{in}[j] = 0$, a <em>known value</em>. So instead of solving</p>
+<div class="kv">$(M^{-1}X_1)[j]^{1/\alpha} - C^{(0)}[j] = 0$ &nbsp; <span class="lbl">degree ~p in $X_1$</span></div>
+<p>you push the constant through the S-box in the easy direction:</p>
+<div class="kv">$(M^{-1}X_1)[j] = (C^{(0)}[j])^{\alpha}$ &nbsp; <span class="lbl">degree 1 in $X_1$ — RHS is a number</span></div>
+<p>Both statements are equivalent because $x \mapsto x^\alpha$ is a <span class="tok" data-n="sbox">bijection</span>. The high-degree map is never written down; only its known image is. This is the same move as the classic "compute forward from a fixed target" step in meet-in-the-middle attacks, and it is what lets GSR absorb a whole <em>full</em> round in addition to the partial ones.</p>
+`},
+
+"mds": {t:"The MDS matrix — and why GSR does not care what it is", h: R`
+<p>MDS = Maximum Distance Separable. A $t \times t$ matrix over $\mathbb{F}_p$ is MDS iff every square submatrix is invertible, equivalently iff the linear code it generates meets the Singleton bound. The practical consequence is the <em>branch number</em> is maximal ($t+1$): you cannot have an input difference with few active words map to an output difference with few active words. That is what kills differential trails and forces full diffusion after one linear layer.</p>
+${dag([
+  {x:20,y:8,t:'x₀',w:44},{x:80,y:8,t:'x₁',w:44},{x:140,y:8,t:'x₂',w:44},
+  {x:20,y:80,t:'y₀',w:44},{x:80,y:80,t:'y₁',w:44},{x:140,y:80,t:'y₂',w:44},
+  {x:240,y:44,t:'every yᵢ depends',w:150,hi:1}
+],[[0,3],[0,4],[0,5],[1,3],[1,4],[1,5],[2,3],[2,4],[2,5]],
+'MDS means the bipartite dependency graph is complete and stays complete under every restriction. One partial round\'s single S-box output reaches all t words after one multiplication by M.',110)}
+<p><b>The point of this paper's independence claim.</b> Several earlier attacks (notably <span class="tok" data-n="slipway">Slipway</span>) needed the MDS matrix and the round constants to satisfy special relations — sometimes a matrix constructed <em>for</em> the attack. GSR's constraints are of the form "the input to this S-box equals $\delta$", which is a statement about one coordinate of the state, not about $M$'s entries. Whatever $M$ and $C^{(i)}$ are, the resulting equations are linear in $X_1$. That is why the abstract can claim the results hold "regardless of the choice of round constants, MDS matrix, S-box exponent $\alpha$, or field size $p$" — the attack is tuned only by $t$ and $k$.</p>
+`},
+
+"partial-rounds": {t:"Partial rounds: the concession that makes the attack possible", h: R`
+<p>In a partial round, the state $(s_0, s_1, \ldots, s_{t-1})$ becomes $(s_0^\alpha, s_1, \ldots, s_{t-1})$ before the linear layer. Only one word passes through non-linearity; the rest are carried through untouched.</p>
+<p>The design justification is that the MDS layer immediately spreads that one non-linear word across all $t$ positions, so after a few partial rounds every coordinate is a high-degree function of the input. Degree-wise this is true — the <em>maximum</em> degree does grow by $\alpha$ per round.</p>
+${strip([
+  {t:'s₀',k:'att'},{t:'s₁',k:'dim'},{t:'s₂',k:'dim'},{t:'s₃',k:'dim'},{t:'s₄',k:'dim'},{t:'s₅',k:'dim'}
+],'One active S-box (red) per partial round; the other t−1 words are the identity. Cheap in a circuit, and a single scalar the attacker can try to pin down.','partial round')}
+<p>But "one S-box per round" also means <em>one scalar constraint per round is enough to linearise that round entirely</em>. If you can force $s_0 + c_0 = \delta$, the non-linear output is the known constant $\delta^\alpha$ and the entire round map becomes affine. A full round would need $t$ such constraints; a partial round needs one.</p>
+<p>So the cost saving and the vulnerability are the same structural fact. GSR spends $t - 2k$ degrees of freedom to buy $t - 2k$ linearised partial rounds — one constraint, one round, all the way through the cheap middle. See <span class="tok" data-n="sbox-skipping">the gadget</span>.</p>
+`},
+
+"algebraic-degree": {t:"Degree is the security parameter here", h: R`
+<p>Write the CICO output constraint as a polynomial in the attacker's free input variables. Every S-box multiplies the degree by $\alpha$; the linear layer does not change it. So over $R$ rounds the degree of the system is bounded by $\alpha^R$, and for Poseidon's KoalaBear instance that is $3^{31} \approx 2^{49}$.</p>
+${strip([
+  {t:'1'},{t:'3'},{t:'9'},{t:'27'},{t:'81'},{t:'…'},{t:'3ᴿ',k:'att'}
+],'Degree after each round, α = 3. Solving a univariate polynomial of degree d costs about d² field operations, so degree is the whole security story — and every round you can hold at degree 1 is a factor of 3 removed from the exponent.','degree')}
+<p>Two consequences worth internalising:</p>
+<ul>
+<li><b>Cost is polynomial in the degree, exponential in the round count.</b> <span class="tok" data-n="cz">Root finding</span> is $O(d^2 \log p)$. So the attacker's job is entirely about shrinking the exponent $R$.</li>
+<li><b>A round held at degree 1 is a round deleted.</b> There is no partial credit for a "weakened" round — it either contributes a factor $\alpha$ or it contributes nothing.</li>
+</ul>
+<p>The whole GSR paper is an exercise in moving rounds from the first category to the second: <span class="tok" data-n="where-degree-lives">from $\alpha^{R_{f_0}+R_p+R_{f_1}}$ to $\alpha^{R_{f_0}+R_p+R_{f_1}-1-t+2k}$</span>.</p>
+`},
+
+"cico": {t:"CICO: the standard attack target for AO permutations", h: R`
+<p><b>CICO-$k$.</b> Given a permutation $P$ on $\mathbb{F}_p^t$, find $S_{in}$ such that $k$ chosen input coordinates and $k$ chosen output coordinates equal prescribed constants (conventionally 0).</p>
+${dag([
+  {x:30,y:8,t:'0…0 | free',w:140,hi:1},
+  {x:30,y:56,t:'P (t words)',w:140},
+  {x:30,y:104,t:'0…0 | anything',w:140,hi:1},
+  {x:230,y:56,t:'k in + k out fixed',w:150}
+],[[0,1],[1,2]],
+'CICO-k. The k zero constraints at each boundary are the whole problem; everything else is free. Generic cost is p^k, since you must hit k prescribed field elements.',136)}
+<p><b>Why it is the right target.</b> In a <span class="tok" data-n="sponge">sponge</span>, the capacity words are fixed at the input and must land on prescribed values at the output for a preimage. So CICO is not an artificial exercise — it is the algebraic core of preimage and zero-sum attacks on the hash. The Ethereum <span class="tok" data-n="bounties">Poseidon bounties</span> are stated as CICO challenges for exactly this reason.</p>
+<p><b>Generic cost.</b> Random guessing needs $p^k \approx 2^{31k}$ evaluations for KoalaBear. That is the bar every algebraic attack in Table 1 is measured against — an algebraic attack that costs more than $2^{31k}$ is not an attack at all.</p>
+<p>Note that $k$ larger means a harder problem generically, but also <em>more</em> equations for the attacker to exploit — which is why the paper's ability to handle arbitrary $k$ (rather than $k \in \{1,2\}$) matters for coverage.</p>
+`},
+
+"dof": {t:"Degrees of freedom as a budget", h: R`
+<p>The attacker's resource is the number of independent field elements they may choose. A CICO-$k$ instance fixes $k$ input words, leaving $t - k$ free — that is the budget.</p>
+<div class="kv">
+<b>budget</b> &nbsp;$t - k$ free input words<br>
+<b>spent</b> &nbsp;&nbsp;$t - 2k$ on linear constraints that kill S-boxes<br>
+<b>left</b> &nbsp;&nbsp;&nbsp;$k$ free variables $v_1, \ldots, v_k$<br>
+<b>needed</b> &nbsp;$k$ — one per output constraint
+</div>
+<p>The arithmetic is deliberately exact: after spending, you are left with precisely as many unknowns as equations, so the resulting system is <span class="tok" data-n="zero-dim">zero-dimensional</span> and expected to have solutions. Spend one DoF more and the system is over-determined and probably unsolvable; spend one fewer and you leave a round un-linearised for no reason.</p>
+<p>This budget framing also explains why prior work stalled at $k \le 2$: constraints that depend on the MDS entries interact, and staying independent gets hard as $k$ grows. GSR's constraints are one-per-round on a single coordinate, so independence is essentially free and $k$ can be pushed as far as the <span class="tok" data-n="doubly-exp">resultant cost</span> allows.</p>
+`},
+
+"linearize": {t:"What \"linearising an S-box\" actually means", h: R`
+<p>Nothing is being approximated. The claim is exact and conditional: <em>on the restricted subspace where the S-box input is the constant $\delta$</em>, the map $x \mapsto x^\alpha$ agrees with the constant map $x \mapsto \delta^\alpha$. A degree-$\alpha$ operation has been replaced by a degree-0 one on that subspace.</p>
+${flow([
+  {t:'x ↦ x^α',s:'degree α'},
+  {t:'x = δ fixed',s:'one linear eq',hi:1},
+  {t:'output = δ^α',s:'degree 0'}
+],'Not an approximation. On the affine subspace cut out by the constraint, the S-box output is a number the attacker chose in advance, so the round map is affine and the composition stays degree 1.')}
+<p>The price is paid in coverage, not correctness: the restricted subspace holds $p^{\,t-k-(t-2k)} = p^{k}$ of the original $p^{\,t-k}$ candidate inputs. That would be fatal if you needed <em>all</em> solutions — but CICO only asks for one, and the solution count on the restricted subspace is still expected to be around 1 because there are exactly $k$ remaining equations in $k$ remaining unknowns.</p>
+<p>And if a given $\Delta$ tuple yields no solution, you simply <span class="tok" data-n="partition">pick another one</span>: the subspaces tile the whole space.</p>
+`},
+
+"sbox-skipping": {t:"The GSR gadget in one picture", h: R`
+<p>Two ideas, both about <em>where</em> and <em>how</em> constraints are imposed.</p>
+<p><b>Where.</b> Prior work skipped S-boxes in the <em>initial full rounds</em>, because that is where the attacker's variables are still few and structured. GSR skips them in the <em>partial rounds</em>, in the middle — the region prior methods could not touch and which carries most of the round count.</p>
+<p><b>How.</b> Prior work imposed linear relations among that round's variables — relations whose form depends on $M$ and $C^{(i)}$, and which stop being independent once $k$ grows. GSR instead <em>pins the value</em>: set the S-box input to a chosen constant $\delta^{(r)}$. That is one linear equation on $X_1$, no matter what $M$ is, and it stays independent across rounds.</p>
+${strip([
+  {t:'f',k:'att'},{t:'p',k:'att'},{t:'p',k:'att'},{t:'p',k:'att'},{t:'p',k:'att'},{t:'p'},{t:'f',k:'dim'},{t:'f',k:'dim'},{t:'f',k:'dim'},{t:'f',k:'dim'}
+],'Red = absorbed by GSR (degree 1 throughout): one initial full round backward, t−2k partial rounds forward. White/grey = what the algebraic solver still has to chew through — here one partial round and the final full rounds.','GSR coverage')}
+<p>Counting: $t$ S-boxes in the absorbed full round plus $t - 2k$ in the absorbed partial rounds, but the full-round absorption only enforces $k$ constraints — total $2t - 2k$ S-boxes skipped for $t - k$ spent DoFs. That is $k$ fewer S-boxes than <span class="tok" data-n="round-skipping">Bariant et al.'s $2t - k$ bound</span> — and dramatically better, because the skipped S-boxes sit where the degree would otherwise compound.</p>
+<p>The lesson: <em>count of skipped S-boxes is the wrong metric</em>. Position is what matters.</p>
+`},
+
+"round-skipping": {t:"The prior art: Bariant–Bouvier–Leurent–Perrin", h: R`
+<p>ToSC 2022. The observation: in a CICO-1 instance you hold $t-1$ free input words, and you can choose them so that the first two full rounds' S-box layer contributes nothing to the degree. Concretely, you fix intermediate values so that after the MDS mixing the non-linear contributions cancel, leaving the composition affine across those rounds.</p>
+${strip([
+  {t:'f',k:'att'},{t:'f',k:'att'},{t:'p'},{t:'p'},{t:'p'},{t:'p'},{t:'p'},{t:'f',k:'dim'},{t:'f',k:'dim'}
+],'Round skipping absorbs the two initial full rounds (red) and then stops. Everything from the partial layer onward still contributes a factor α per round — and the partial layer is most of the permutation.','prior art')}
+<p>Two structural limits, both of which GSR removes:</p>
+<ul>
+<li><b>It stops at the full-round boundary.</b> Once the parameterisation reaches the partial layer, the <span class="tok" data-n="dense-mixing">MDS layer mixes</span> the remaining free variables into every coordinate and the degree resumes growing at $\alpha$ per round. For KoalaBear that leaves 27 of 31 rounds intact.</li>
+<li><b>Its constraints depend on $M$ and $C$.</b> The linear relations imposed are between variables of the same round and their independence is a fact about the matrix. That is why the technique was only ever instantiated for $k \in \{1,2\}$.</li>
+</ul>
+<p>Its headline number — $2t - k$ skipped S-boxes — is the theoretical maximum for that formulation, and GSR deliberately settles for $2t - 2k$. Fewer S-boxes, better placed.</p>
+`},
+
+"dense-mixing": {t:"Why the middle is the hard part", h: R`
+<p>After the initial full rounds, every state coordinate is already a function of every free variable. From there each partial round takes one coordinate through $x^\alpha$ and the MDS layer smears the result over all $t$ coordinates. Degree triples, and the number of monomials in the multivariate expansion grows even faster.</p>
+${flow([
+  {t:'few vars',s:'structured'},
+  {t:'MDS + S-box',s:'×α degree',hi:1},
+  {t:'dense',s:'every var everywhere'}
+],'Once the parameterisation is dense, no clever linear relation among the current round\'s variables stays independent — which is why prior attacks could not reach past the full-round boundary.')}
+<p>GSR sidesteps this by never letting the parameterisation go dense in the first place. It <span class="tok" data-n="reparam">re-anchors the variables at $X_1$</span>, the state entering the partial layer, and constrains forward from there — so the constraints are imposed while the state is still an affine function of the variables, not after the mixing has happened.</p>
+`},
+
+"reparam": {t:"Re-anchoring the variables at $X_1$", h: R`
+<p>A small move with all the leverage. Instead of treating the unknowns as $S_{in}$ (the permutation input) and pushing forward, the paper treats them as $X_1$ — the state just before the partial layer — and works <em>outward in both directions</em>.</p>
+${dag([
+  {x:150,y:8,t:'Sin',w:90},
+  {x:150,y:56,t:'X₁ (the variables)',w:150,hi:1},
+  {x:150,y:104,t:'partial rounds →',w:130}
+],[[1,0,{up:1}],[1,2]],
+'Backward from X₁ through the initial full round (one inverse MDS, and the S-box dodged by pushing the known constant forward). Forward from X₁ through the partial rounds, one linear constraint per round. Both directions stay degree 1 in X₁.',136)}
+<p>Why it works: the constraints the attacker wants to impose live in the partial layer, and they are linear <em>in the state at that point</em>. Anchoring the variables there makes them linear in the variables too. Anchoring at $S_{in}$ instead would make them degree $\alpha^{R_{f_0}}$ and useless.</p>
+<p>The backward direction is only affordable because of the <span class="tok" data-n="alpha-inverse">constant-pushing trick</span>, and only one full round deep — beyond that you would need the inverse S-box on unknowns.</p>
+`},
+
+"affine": {t:"Affine = free", h: R`
+<p>An affine map is $x \mapsto Ax + b$. Composing affine maps gives an affine map; a system of affine equations is solved by Gaussian elimination in $O(t^3)$ field operations. So any stretch of the permutation the attacker can force to be affine costs essentially nothing to invert.</p>
+<p>The GSR round transition, with the S-box input pinned to $\delta^{(r)}$:</p>
+<div class="kv">$S^{(r+1)} = M \cdot \left(S^{(r)} + C^{(r)} - \delta^{(r)} e_0 + (\delta^{(r)})^\alpha e_0\right)$</div>
+<p>Read the bracket: take the state, add the round constant, <em>subtract</em> the pinned S-box input at coordinate 0 and <em>add back</em> the known output $(\delta^{(r)})^\alpha$. Everything on the right is either the state (linear) or a constant. Multiplying by $M$ preserves that. So $S^{(r+1)}$ is affine in $S^{(r)}$, hence — by induction — affine in $X_1$.</p>
+<p>This is the sense in which the middle of the permutation has been <em>deleted</em> rather than weakened. It contributes to the linear system, not to the degree.</p>
+`},
+
+"partition": {t:"The subspaces tile the space", h: R`
+<p>A worry you should have: the attacker restricts to a tiny subspace, so maybe there is no solution in it. The paper's answer is a counting argument.</p>
+<p>Each choice of $\Delta = (\delta^{(1)}, \ldots, \delta^{(t-2k)})$ defines a different set of constraints, hence a different affine subspace of candidate inputs. Distinct $\Delta$ give disjoint subspaces (the S-box inputs differ), and every input to the permutation has <em>some</em> sequence of actual S-box inputs — so it lies in exactly one of them.</p>
+${strip([
+  {t:'Δ₁',k:'ghost'},{t:'Δ₂',k:'ghost'},{t:'Δ₃',k:'ghost'},{t:'…',k:'ghost'},{t:'Δₙ',k:'ghost'}
+],'The Δ-indexed subspaces partition the full input space. Choosing a Δ is not a guess that might miss — it is a choice of which cell of the partition to search first, and every cell costs the same.','partition')}
+<p>Two payoffs. First, correctness: the technique is not heuristic, it is a decomposition. Second, <span class="tok" data-n="multi-target">many solutions on demand</span> — each new $\Delta$ is an independent draw at the same cost, which turns a single CICO solver into a collision and multi-target machine.</p>
+`},
+
+"multi-target": {t:"From one solution to collisions", h: R`
+<p>A CICO solver that returns one solution breaks a preimage claim once. A solver that returns <em>arbitrarily many at unit cost each</em> is a stronger object.</p>
+<p>Because each $\Delta$ tuple yields its own zero-dimensional system with its own solutions, the attacker can enumerate $\Delta$ and harvest distinct $S_{in}$ values all satisfying the same input/output constraints. Two such values with the same constrained output are a <span class="tok" data-n="sponge">collision on the capacity</span>; a pool of them is a multi-target preimage set.</p>
+<p>The economics matter for real deployments. A one-shot break costs whatever the attack costs; a break where the marginal cost of the $n$-th solution is the same as the first defeats the usual mitigations (domain separation salts, per-user targets) that rely on attack cost scaling with the number of targets.</p>
+`},
+
+"where-degree-lives": {t:"The degree bookkeeping, end to end", h: R`
+<p>The single formula that summarises the paper. Baseline degree of the CICO system:</p>
+<div class="kv">$d_{naive} = \alpha^{R_{f_0} + R_p + R_{f_1}}$</div>
+<p>With GSR, one full round and $t - 2k$ partial rounds are held at degree 1:</p>
+<div class="kv">$d_{opt} = \alpha^{R_{f_0} + R_p + R_{f_1} - 1 - t + 2k} = \alpha^{R_p + R_{f_1} - t + 2k}$</div>
+${strip([
+  {t:'1',s:'f₀',k:'att'},{t:'1',s:'p',k:'att'},{t:'1',s:'p',k:'att'},{t:'1',s:'p',k:'att'},{t:'3',s:'p'},{t:'9',s:'f₁'},{t:'27',s:'f₁'},{t:'81',s:'f₁'},{t:'243',s:'f₁'}
+],'Degree, round by round, under GSR with α = 3. Flat at 1 through everything the gadget absorbs; the exponential only starts at the first un-absorbed round. All the security now rests on the final full rounds.','degree')}
+<p>Plug in KoalaBear, $t = 24$, $\alpha = 3$, $k = 1$, $(1, 23, 4)$: the gadget absorbs $t - 2k = 22$ partial rounds, leaving $23 - 22 = 1$ live partial round plus 4 final full rounds. Degree drops from $3^{28} \approx 2^{44.4}$ to $3^{5} = 243$.</p>
+<p>For $k = 2$ on $(1, 20, 4)$: $t - 2k = 20$ absorbs <em>every</em> partial round. Degree $3^{4} = 81$. At that point the only thing standing between the attacker and the full permutation is $R_{f_1}$ — the final full rounds — which is a much thinner margin than the round count suggests.</p>
+`},
+
+"distinguisher": {t:"What is being distinguished, and why it counts", h: R`
+<p>A distinguisher is any efficiently checkable property that a random permutation would not have. Here the property is: <em>there is a $k$-dimensional affine subspace of inputs on which $t - 2k + 1$ rounds of Poseidon act affinely.</em></p>
+<p>For a random permutation on $\mathbb{F}_p^{24}$ the probability that some affine subspace maps affinely is astronomically small. For Poseidon it holds with probability 1, is constructible in $O(t^3)$ work, and covers $t - 2k + 1 = 23$ rounds at $k = 1$.</p>
+<div class="kv">
+<b>coverage</b> &nbsp;$t - 2k + 1$ rounds &nbsp;·&nbsp; 23 of 31 at $k = 1$, $t = 24$<br>
+<b>probability</b> &nbsp;exactly 1 — not statistical<br>
+<b>cost</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;solving a linear system
+</div>
+<p>The paper claims this is the longest distinguisher known for Poseidon. A distinguisher on its own does not break the hash — it says nothing directly about preimages — but it is the standard signal that the round count is doing less work than advertised, and here it is also the <em>engine</em> of the actual attack: the affine subspace is the parameterisation the <span class="tok" data-n="interp">interpolation step</span> runs on.</p>
+<p>The footnote about Sanso having found something similar and dismissed it as "not interesting" is a nice illustration of the difference between a distinguisher and a distinguisher you know what to do with.</p>
+`},
+
+"zero-dim": {t:"Zero-dimensional ideals, and why you want one", h: R`
+<p>An ideal $I \subseteq \mathbb{F}_p[v_1, \ldots, v_k]$ is <em>zero-dimensional</em> when its variety (solution set over the algebraic closure) is finite. The practical test is counting: $k$ generically independent equations in $k$ unknowns.</p>
+<p>Why it matters: essentially every algebraic solving technique — <span class="tok" data-n="groebner">Gröbner bases</span> with FGLM, <span class="tok" data-n="resultant">resultants</span>, eigenvalue methods — needs finiteness to terminate with an explicit root list. A positive-dimensional system has curves or surfaces of solutions and no notion of "extract the roots".</p>
+<p>This is why the DoF arithmetic in §5.3 has to be exact. Spend $t - 2k$ DoFs, keep $k$ variables, face $k$ output constraints: determined system, finite solution set, expected solution count around 1 by Bézout heuristics. The paper's phrasing — "is expected to have one valid solution" — is precisely this heuristic, and it is why the attack sometimes needs a second $\Delta$.</p>
+`},
+
+"null-space": {t:"The affine subspace, concretely", h: R`
+<p>After imposing $t - k$ independent linear constraints on the $t$ unknowns of $X_1$, the solution set is an affine subspace of dimension $k$. Writing it down is standard linear algebra:</p>
+<div class="kv">
+$X_1(v_1, \ldots, v_k) = Z_{base} + \sum_{i=1}^{k} v_i B_i$
+</div>
+<ul>
+<li>$Z_{base}$ — any particular solution of the inhomogeneous system.</li>
+<li>$B_1, \ldots, B_k$ — a basis of the null space of the constraint matrix.</li>
+<li>$v_1, \ldots, v_k$ — the surviving free variables, and the only unknowns the algebraic solver will ever see.</li>
+</ul>
+<p>Everything downstream is a polynomial in these $k$ variables. That is the real dimension reduction: a system that was nominally in $t = 24$ unknowns is now in $k \in \{1, 2\}$, which is exactly the regime where <span class="tok" data-n="univariate">univariate root finding</span> and <span class="tok" data-n="resultant">bivariate resultants</span> are cheap — and where the memory blowup of Gröbner bases never gets a chance to happen.</p>
+`},
+
+"groebner": {t:"Gröbner bases, and why this paper avoids them", h: R`
+<p>The default tool for solving multivariate polynomial systems. Buchberger's algorithm (and its faster descendants F4/F5) computes a basis of the ideal from which solutions can be read off — typically compute a degrevlex basis, then change order to lex via FGLM, then root-find.</p>
+<div class="kv">
+<b>step 1</b> degrevlex Gröbner basis &nbsp;·&nbsp; the expensive part<br>
+<b>step 2</b> FGLM order change &nbsp;·&nbsp; $O(k \cdot D^3)$, $D$ = solution count<br>
+<b>step 3</b> univariate root finding
+</div>
+<p>The trouble is step 1. Complexity is governed by the <em>degree of regularity</em>, and both time and — critically — <em>memory</em> blow up: the Macaulay matrices involved have dimensions polynomial in $\binom{k + d_{reg}}{k}$. For AO cryptanalysis the memory wall is usually what stops the attack, not the clock.</p>
+<p>This paper's answer is to not go there. By driving the system down to $k \le 2$ variables of low degree, it can use <span class="tok" data-n="resultant">Sylvester resultants</span> and <span class="tok" data-n="cz">Cantor–Zassenhaus</span> instead — deterministic, memory-light, and with clean complexity bounds you can put in a table. That is a real methodological point, not just an implementation detail: the <span class="tok" data-n="freelunch">FreeLunch/CheapLunch</span> line of work is about bounding Gröbner cost, whereas GSR sidesteps the question.</p>
+`},
+
+"freelunch": {t:"FreeLunch, CheapLunch, and ideal degree bounds", h: R`
+<p>The FreeLunch family of attacks (Bariant, Boeuf, Briaud, Øygarden, Perrin et al.) finds polynomial systems for AO primitives where the <em>input</em> system is already a Gröbner basis for a suitable order — so step 1 above is free, and the cost collapses to FGLM plus root finding, which is governed by the ideal degree.</p>
+<p>CheapLunch [4] extends this to multi-output CICO-$k$ and proves that Poseidon's ideal degree is bounded by $\alpha^{k \cdot R_F + R_P}$ without round skipping. That bound is the honest baseline for "how hard is Poseidon algebraically if you are clever about Gröbner bases but do not skip anything".</p>
+<p>Reading the two lines of work together: FreeLunch/CheapLunch attack the <em>solving</em> cost given a system; round skipping and GSR attack the <em>system itself</em>, shrinking the exponent before any solver runs. GSR's contribution is on the second axis and composes with progress on the first.</p>
+`},
+
+"resultant": {t:"Sylvester resultants: eliminating a variable", h: R`
+<p>Given $g_1, g_2 \in \mathbb{F}_p[v_1][v_2]$ — bivariate, but viewed as univariate in $v_2$ with coefficients that are polynomials in $v_1$ — the <em>Sylvester matrix</em> is built from their coefficient vectors, shifted:</p>
+<div class="kv">
+$\mathrm{Res}(g_1, g_2, v_2) = \det \mathrm{Syl}(g_1, g_2) \in \mathbb{F}_p[v_1]$
+</div>
+<p>The defining property: the resultant vanishes at $v_1 = a$ iff $g_1(a, \cdot)$ and $g_2(a, \cdot)$ share a common root in $v_2$ (over the closure). So the resultant is exactly the set of $v_1$-values that <em>could</em> extend to a common solution.</p>
+${flow([
+  {t:'g₁,g₂(v₁,v₂)',s:'degree d each'},
+  {t:'Res(·,·,v₂)',s:'eliminate v₂',hi:1},
+  {t:'h(v₁)',s:'degree ≤ d²'}
+],'One elimination step. Degree squares, variable count drops by one. For k = 2 this is one step and then a root-find — cheap. For larger k the squaring compounds.')}
+<p><b>Solve procedure for $k = 2$.</b> Compute $\mathrm{Res}$, root-find the resulting univariate polynomial of degree $\le d^2$ with <span class="tok" data-n="cz">Cantor–Zassenhaus</span>, back-substitute each root into $g_1$ to get a degree-$d$ univariate in $v_2$, root-find again. Deterministic, memory $O(d^2 \log p)$ — no Macaulay matrices.</p>
+<p>Cost: $\tilde{O}(d^3)$ to form and evaluate the determinant [Giorgi–Jeannerod–Villard], which is why the paper can quote clean bit-complexities. The catch appears at <span class="tok" data-n="doubly-exp">$k > 2$</span>.</p>
+`},
+
+"doubly-exp": {t:"Why naive resultant chaining dies at large $k$", h: R`
+<p>Each elimination step squares the degree. Starting from $k$ polynomials of degree $d$ and eliminating one variable at a time down to univariate:</p>
+${strip([
+  {t:'d'},{t:'d²'},{t:'d⁴'},{t:'d⁸'},{t:'d¹⁶',k:'att'}
+],'Degree after each pairwise elimination step. After k−1 steps you are at d^(2^(k−1)) — doubly exponential in k, against a Bézout-expected degree of only d^k.','degree')}
+<p>The Bézout bound says the system has at most $d^k$ solutions, so a degree-$d^{2^{k-1}}$ univariate polynomial is carrying enormous spurious baggage — extraneous factors introduced by treating the elimination pairwise rather than jointly.</p>
+<p>The paper is candid that this is "far from optimal" and notes that there is therefore a threshold $k$ beyond which GSR-plus-resultants loses to <span class="tok" data-n="brute-force">brute force</span>. Table 1 is constructed to stay below that threshold: for $k \ge 5$ the authors shrink $R_{f_1}$ (to 2, then 1) so the GSR column keeps beating $2^{31k}$. Read the table that way and the message is sharper — at large $k$ the attack only wins against instances with a thinner final full-round layer, and the gap it wins by is shrinking ($2^{20.8}$ vs $2^{31}$ at $k=1$; $2^{207.8}$ vs $2^{217}$ at $k=7$).</p>
+<p>Better tools exist — multivariate resultants (Macaulay, sparse/toric), Gröbner with FGLM, homotopy continuation — and would tighten these numbers. The authors leave that on the table, which is a fair signal that the CICO-$k$ numbers for larger $k$ are upper bounds on the attack cost, not the last word.</p>
+`},
+
+"cz": {t:"Cantor–Zassenhaus root finding", h: R`
+<p>The standard probabilistic algorithm for factoring a univariate polynomial over a finite field, and specifically for extracting its roots in $\mathbb{F}_p$.</p>
+<ul>
+<li><b>Step 1 — split off the roots.</b> Compute $\gcd(f(x), x^p - x)$. Since $x^p - x = \prod_{a \in \mathbb{F}_p}(x - a)$, this gcd is exactly the product of the distinct linear factors of $f$. The $x^p \bmod f$ part is a modular exponentiation costing $O(\log p)$ polynomial multiplications.</li>
+<li><b>Step 2 — equal-degree splitting.</b> Pick random $u$, compute $\gcd(f, u^{(p-1)/2} - 1)$; each such gcd splits the root set roughly in half. Repeat recursively.</li>
+</ul>
+<div class="kv">
+<b>time</b> &nbsp;&nbsp;$O(d^2 \log p)$ bit operations (practical bound used in the paper)<br>
+<b>memory</b> $O(d \log p)$ bits — you only ever hold a few degree-$d$ polynomials
+</div>
+<p>The memory line is the important one. This is why the paper's complexity table has a memory column that stays small even when the time column is large: unlike Gröbner bases, root finding never materialises a huge matrix. Kaltofen–Shoup [15] give the subquadratic variants.</p>
+`},
+
+"univariate": {t:"Univariate is the goal state", h: R`
+<p>Every technique in §6 is a funnel toward one univariate polynomial over $\mathbb{F}_p$, because that is the only case where solving is genuinely routine: $O(d^2 \log p)$ with tiny memory, with mature implementations (NTL, Flint) behind it.</p>
+${flow([
+  {t:'t vars, deg α^R',s:'hopeless'},
+  {t:'k vars, deg d',s:'after GSR',hi:1},
+  {t:'1 var',s:'after resultants'},
+  {t:'roots',s:'Cantor–Zassenhaus'}
+],'The funnel. GSR does the first arrow — the one that changes the exponent. Resultants do the second, root finding the third. Only the first arrow is new in this paper.')}
+<p>Worth noting which arrow carries the weight. Steps two and three are textbook computer algebra. The contribution is entirely in getting from "24 variables, degree $3^{28}$" to "1 or 2 variables, degree $3^4$" — after which anyone's laptop finishes the job.</p>
+`},
+
+"interp": {t:"Interpolation attacks", h: R`
+<p>You do not need a symbolic expression for $f(v_1)$ to root-find it. If you know the degree is at most $d$, evaluate the cipher at $d+1$ distinct points and reconstruct the polynomial by Lagrange interpolation:</p>
+<div class="kv">$f(v_1) = \sum_{i=0}^{d} f(x_i) \prod_{j \ne i} \dfrac{v_1 - x_j}{x_i - x_j}$</div>
+<p>Each evaluation is one forward run of the (round-reduced) permutation on a concrete field element — no algebra at all. So the attack is:</p>
+<ol style="font-size:14.5px">
+<li>Set up the GSR subspace: $X_1(v_1) = Z_{base} + v_1 B_1$.</li>
+<li>For $d+1$ values of $v_1$, run the permutation forward and record the constrained output coordinate.</li>
+<li>Interpolate to get $f$, then <span class="tok" data-n="cz">root-find</span>.</li>
+<li>Any root gives a concrete $X_1$, hence $S_{in}$ — which you verify by running the permutation.</li>
+</ol>
+<p>This is what makes the attack so implementable and so verifiable: the appendices of the paper contain explicit input/output states anyone can check with a Poseidon implementation. The interpolation approach dates to Jakobsen–Knudsen (1997); its revival for AO primitives is a direct consequence of those primitives having genuinely low degree.</p>
+`},
+
+"koalabear": {t:"KoalaBear and the small-field turn", h: R`
+<p>KoalaBear is the prime $p = 2^{31} - 2^{24} + 1 = 2130706433$. It belongs to the recent generation of small, 31-bit, NTT-friendly primes — alongside BabyBear ($2^{31} - 2^{27} + 1$) and Mersenne31 ($2^{31} - 1$) — adopted by STARK provers (Plonky3, Risc0, SP1) because 31-bit field arithmetic fits a machine word and vectorises beautifully.</p>
+<div class="kv">
+$p = 2^{31} - 2^{24} + 1$ &nbsp;·&nbsp; $p - 1 = 2^{24}\cdot 127$ &nbsp;·&nbsp; $\gcd(3, p-1) = 1 \Rightarrow \alpha = 3$
+</div>
+<p>Two consequences for this paper:</p>
+<ul>
+<li><b>$\alpha = 3$ is as small as it gets</b>, so degree grows as slowly as possible per round — good for circuit cost, bad for algebraic security margin. Compare BLS12-381's scalar field, where $\alpha = 5$.</li>
+<li><b>The field is <em>small</em>.</b> Generic CICO-1 brute force is only $2^{31}$ — trivially feasible. So an algebraic attack on CICO-1 has to beat $2^{31}$ to mean anything, which is a demanding bar and one the paper clears by ten orders of magnitude ($2^{20.8}$).</li>
+</ul>
+<p>Small fields are a real shift in the AO threat model: attacks that were academic over 255-bit fields become practical, and security has to come from the round count alone.</p>
+`},
+
+"eth-poseidon": {t:"The Ethereum Poseidon initiative", h: R`
+<p>Ethereum has been evaluating Poseidon over a small field as the hash for its post-quantum, STARK-friendly state commitment — replacing Keccak in the Merkle–Patricia trie would make state proofs vastly cheaper to verify inside a zkEVM.</p>
+<p>Because the stakes are large and the primitive is young, the Ethereum Foundation funded a cryptanalysis initiative: a specified parameter set (KoalaBear, $t = 24$, $\alpha = 3$, $R_F = 8$, $R_P = 23$ — 31 rounds), public <span class="tok" data-n="bounties">bounty challenges</span> on round-reduced instances, and grants to analysis teams. This paper is one of those grants (FY26-2457) and was disclosed to the EF before publication.</p>
+<p>That context is why the paper's numbers are framed against 31 rounds specifically, and why "28 of 31" and "25 of 31" are the headline claims rather than abstract asymptotics. The initiative is functioning as intended here: the parameters are being stress-tested before deployment, not after.</p>
+`},
+
+"bounties": {t:"The bounty challenges", h: R`
+<p>The Ethereum Foundation posted concrete CICO challenges on round-reduced Poseidon and Poseidon2 instances with cash prizes — a public, falsifiable way to measure the state of the art rather than trading asymptotic bounds.</p>
+<p>Bak, Bariant, Boeuf, Hostettler, and Jazeron [5] claimed several using resultant-based algebraic attacks and univariate root finding — the same toolchain this paper uses downstream of GSR. The pattern in the results is consistent: <em>reduce to few variables, then use classical computer algebra</em>, rather than throwing a general Gröbner engine at the full system.</p>
+<p>Bounties have a distorting effect worth noting: they concentrate effort on the specific reduced instances posted, so "no one has broken $X$ rounds" partly reflects where the prizes were. The steady march visible in this paper's related work — 18 rounds, then 25, then 28 — is what that concentration produces.</p>
+`},
+
+"subspace-trail": {t:"Subspace trails", h: R`
+<p>A subspace trail is a chain of affine subspaces $V_0 \to V_1 \to \cdots$ such that the round function maps each coset of $V_i$ into a coset of $V_{i+1}$. It generalises truncated differentials, and for AES-like designs it was the tool that produced the strongest structural distinguishers.</p>
+<p>Grassi, Koschatko, and Rechberger [13] applied finite subspace trails to Poseidon: find subspaces on which some partial rounds act linearly, use them to reduce the Gröbner basis problem. That is genuinely close in spirit to GSR — both linearise partial rounds by restricting to a subspace.</p>
+<p>The difference is where the subspace comes from. Subspace-trail attacks <em>search</em> for subspaces with a propagation property, which depends on the specific $M$ and round constants, and the trails they find are short and instance-dependent. GSR <em>constructs</em> the subspace by fiat — "the S-box input equals $\delta$" — which is always available, for any $M$, for as many rounds as you have DoFs to spend. Less elegant, far more general.</p>
+<p>The MDS design criteria in [14] (Grassi–Rechberger–Schofnegger, "Proving resistance against infinitely long subspace trails") exist precisely to rule out the propagating kind. They do nothing against the constructed kind — which is the paper's sharpest structural point.</p>
+`},
+
+"annihilation": {t:"Degree annihilation (Sanso–Vitto)", h: R`
+<p>ePrint 2026/1254. "Top Gun: Degree Annihilation Attacks on Poseidon". The technique linearises the first <em>two partial rounds</em> for a round-reduced KoalaBear instance $(t, \alpha, R_F, R_P) = (16, 3, 6, 8)$ in the CICO-2 setting.</p>
+<p>Read chronologically, this is the first step into the partial layer — prior work stopped at the full-round boundary. GSR is the generalisation: instead of two partial rounds via a specific algebraic cancellation, $t - 2k$ partial rounds via a uniform pinning constraint, for arbitrary $k$, independent of $M$.</p>
+<p>Note how compressed the timeline is: 2026/1254, then 2026/1579 (<span class="tok" data-n="slipway">Slipway</span>), then 2026/1692 (this paper) — three escalating results within months, each absorbing more of the partial layer. That trajectory is itself a data point about Poseidon's margin.</p>
+`},
+
+"slipway": {t:"Slipway (Vitto) and the MDS caveat", h: R`
+<p>ePrint 2026/1579. Vitto constructs a constrained input family together with a <em>round-constant-dependent MDS matrix</em> that establishes a finite trail holding the active S-box coordinate constant across partial rounds — bypassing 18 of 28 rounds for CICO-2 on the $(16, 3, 8, 20)$ KoalaBear instance, cutting the effective degree from $3^{28}$ to $3^{10} = 59049$.</p>
+<p>The footnote in this paper is doing real work: <em>"this attack does not utilize the standard fixed MDS matrix of Poseidon."</em> Slipway needs a matrix built for the attack, so it is a statement about the Poseidon <em>design space</em> — a warning that some MDS choices are catastrophic — rather than a break of a deployed instance.</p>
+<div class="kv">
+<b>Slipway</b> &nbsp;18/28 rounds &nbsp;·&nbsp; $k = 2$ &nbsp;·&nbsp; needs a special $M$<br>
+<b>GSR</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;25/31 and 28/31 &nbsp;·&nbsp; any $k$ &nbsp;·&nbsp; <span class="tok" data-n="mds">any $M$, any $C$, any $\alpha$, any $p$</span>
+</div>
+<p>That last row is the claim to weigh. If it holds, no choice of round constants or MDS matrix repairs the weakness — only more rounds, or a different structure for the middle layer.</p>
+`},
+
+"graeffe": {t:"Graeffe root finding over NTT-friendly fields", h: R`
+<p>Zhao, Sanso, Vitto, and Ding [19] (ePrint 2025/1916). The Graeffe transform maps $f(x)$ to a polynomial whose roots are the squares of $f$'s roots, computable as $f(x)f(-x) = g(x^2)$. Iterating separates roots by magnitude, and over $\mathbb{F}_p$ with $p - 1$ highly 2-adic — exactly the NTT-friendly primes like <span class="tok" data-n="koalabear">KoalaBear</span> — the transform composes well with FFT-based multiplication.</p>
+<p>It is an alternative to <span class="tok" data-n="cz">Cantor–Zassenhaus</span> in the same slot of the attack pipeline, sometimes with better constants for very high degree. The same paper also proves NTT lower bounds, which cut the other way — they bound how fast <em>any</em> attacker can do the root-finding step.</p>
+<p>Not used in this paper, but it is the reason the root-finding step is not the bottleneck anywhere in Table 1: after GSR the degrees involved are in the hundreds, and any of these algorithms finishes instantly.</p>
+`},
+
+"shake": {t:"Round constants from SHAKE-256", h: R`
+<p>Poseidon derives its round constants by expanding a seed with SHAKE-256 (the extendable-output function from FIPS 202). This is a "nothing up my sleeve" construction: the constants are reproducible from a short public seed, so nobody can claim they were chosen to hide a trapdoor.</p>
+<p>Round constants exist to break the symmetry and self-similarity of the round function — without them, iterating the same round makes slide attacks and fixed points available.</p>
+<p>What they cannot do is protect against GSR. The forward constraint is $(S^{(r)} + C^{(r)})[0] = \delta^{(r)}$, and since $C^{(r)}$ is a known constant this is a linear equation on the state <em>whatever $C^{(r)}$ is</em>. Likewise the backward step just evaluates $(C^{(0)}[j])^\alpha$, a number. The constants are fully absorbed into the affine bookkeeping — which is the concrete content of the "regardless of the choice of round constants" claim.</p>
+`},
+
+"margin": {t:"Reading \"28 out of 31\"", h: R`
+<p>The recommended KoalaBear instance is 31 rounds ($R_F = 8$, $R_P = 23$). This paper solves CICO-1 on 28 and CICO-2 on 25. So the hash is not broken — but the accounting deserves care.</p>
+${strip([
+  {t:'1',s:'f₀',k:'att'},{t:'23',s:'partial',k:'att'},{t:'4',s:'f₁',k:'att'},{t:'3',s:'f₁ left',k:'dim'}
+],'The (1,23,4) = 28-round instance solved, against the 31-round recommendation. What remains is three full rounds — and they are full rounds at the end, which is precisely where GSR has no purchase.','31 rounds total')}
+<p>Two ways to read the remaining margin:</p>
+<ul>
+<li><b>Reassuring.</b> Three more full rounds multiply the degree by $\alpha^{3} = 27$ at minimum, and GSR's technique — spending DoFs on single-coordinate constraints — does not extend to full rounds, where each round would need $t$ constraints and the attacker has none left.</li>
+<li><b>Worrying.</b> The entire 23-round partial layer contributed <em>nothing</em>. The security of the recommended instance rests on $R_F = 8$ full rounds, of which the gadget already absorbs one. The margin is not "3 rounds out of 31"; it is "the final full rounds, and nothing else". Whether $R_F = 8$ alone is enough is a question the design was never asked.</li>
+</ul>
+<p>That is the substance of the conclusion's call for "a rigorous reevaluation of algebraic security margins" — see <span class="tok" data-n="what-it-means">what this changes</span>.</p>
+`},
+
+"brute-force": {t:"The $2^{31k}$ bar", h: R`
+<p>Every complexity in Table 1 is measured against generic CICO-$k$ brute force: guess inputs at random, check whether the $k$ output words hit their targets. Each guess succeeds with probability $p^{-k}$, so the cost is $\approx 2^{31k}$ for KoalaBear.</p>
+<div class="kv">
+$k=1$: $2^{31}$ &nbsp;·&nbsp; $k=2$: $2^{62}$ &nbsp;·&nbsp; $k=3$: $2^{93}$ &nbsp;·&nbsp; $k=7$: $2^{217}$
+</div>
+<p>Why the bar matters so much here: over a 31-bit field, $2^{31}$ is <em>nothing</em>. A CICO-1 "attack" costing $2^{93.7}$ — which is what the baseline SyCZ column reports for 28 rounds — is not an attack, it is a slower way of doing something you could do on a laptop in minutes. This is the trap that catches most algebraic results over small fields, and it is why the baseline column in Table 1 is uniformly worse than brute force.</p>
+<p>GSR's $2^{20.8}$ for CICO-1 clears it by a factor of a thousand, and its $2^{30.3}$ for CICO-2 clears $2^{62}$ by a factor of $2^{32}$. Those are the two numbers that make the paper an attack rather than an observation.</p>
+`},
+
+"sycz": {t:"SyCZ — the solver combination", h: R`
+<p>The paper's shorthand for its solving pipeline: <b>Sy</b>lvester resultants to eliminate variables down to one, then <b>C</b>antor–<b>Z</b>assenhaus to extract roots. When the system is already univariate ($k = 1$) the Sylvester step is skipped.</p>
+${flow([
+  {t:'k polys, k vars',s:'degree d'},
+  {t:'Sylvester ×(k−1)',s:'eliminate',hi:1},
+  {t:'CZ root find',s:'O(D² log p)'}
+],'The pipeline priced in Table 1. Both stages are deterministic-ish, memory-light, and have textbook complexity bounds — which is what lets the paper publish a table of numbers instead of experimental timings only.')}
+<p>The "Baseline" column applies SyCZ to the un-restricted system (no partial-round skipping); the "with GSR" column applies it after the gadget. Same solver, two different systems — an honest comparison, since it isolates the contribution of GSR from the contribution of using good computer algebra.</p>
+<p>It is also a deliberately conservative choice: SyCZ is not the best available multivariate solver at larger $k$ (see <span class="tok" data-n="doubly-exp">the degree squaring problem</span>), so the GSR column for $k \ge 4$ is pessimistic about the attack, not optimistic.</p>
+`},
+
+"practical": {t:"\"Milliseconds\" — what was actually run", h: R`
+<p>The authors implemented the attack in an optimised C++ algebraic solver and recovered concrete CICO-1 solutions over 28 rounds and CICO-2 solutions over 25 rounds, publishing the MDS matrix, round constants, and resulting input/output states in the appendices.</p>
+<p>This matters more than the complexity table. An algebraic attack paper that only reports exponents can be wrong in ways nobody notices — a degree bound that is not tight, an independence assumption that fails, a system that turns out positive-dimensional in practice. Published input/output pairs are falsifiable by anyone with a Poseidon implementation and an afternoon.</p>
+<p>The parameters were chosen to match the <span class="tok" data-n="eth-poseidon">Ethereum initiative's</span> instance ($t = 24$, $\alpha = 3$, KoalaBear, circulant MDS from the official poseidon-tools repository, SHAKE-256 constants), so the artifacts are directly comparable to the deployed proposal rather than a convenient variant.</p>
+`},
+
+"what-it-means": {t:"What this actually changes", h: R`
+<p>Poseidon is not broken. The full 31-round KoalaBear instance stands, and no preimage or collision on the deployed hash follows from this paper. What changes is the <em>shape</em> of the security argument.</p>
+<h4>Before</h4>
+<p>"The permutation has 31 rounds; the algebraic degree is $3^{31}$; solving a system of that degree is infeasible." Round count and degree were interchangeable, and adding cheap partial rounds bought security at almost no circuit cost. That is the whole economic premise of the HADES strategy.</p>
+<h4>After</h4>
+<p>Partial rounds are worth $\alpha$ each <em>only against an attacker who does not spend degrees of freedom on them</em>. Against GSR, up to $t - 2k$ of them are worth 1 each. The state size $t$ — chosen for throughput — is now also a bound on how many rounds an attacker can delete, which is an uncomfortable coupling: <em>bigger states linearise more rounds</em>.</p>
+<ul>
+<li><b>For parameter selection:</b> $R_P$ should be counted at a discount, roughly $R_P - (t - 2k)$ effective rounds. For $t = 24$, $R_P = 23$, that discount is total.</li>
+<li><b>For design:</b> the fix is not a better MDS matrix or better constants — GSR is <span class="tok" data-n="mds">independent of both</span>. It is either more full rounds, or a middle layer where one scalar constraint cannot linearise a round (e.g. more active S-boxes per partial round, at direct circuit cost).</li>
+<li><b>For deployment:</b> the Ethereum instance retains a margin of a few full rounds. That margin is thinner than the round count advertises, and the trend line across 2026 — 18, then 25, then 28 rounds — has not flattened.</li>
+</ul>
+<p>The honest summary: this is a structural result about the HADES middle layer, delivered with running code, on the exact parameters a major deployment is considering.</p>
+`}
+
+};
+
+const stack  = document.getElementById('stack');
+const crumbs = document.getElementById('crumbs');
+const paper  = document.getElementById('col-paper');
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let chain = [];
+
+function typeset(el){
+  if (window.renderMathInElement) {
+    renderMathInElement(el, {
+      delimiters: [
+        {left:'$$', right:'$$', display:true},
+        {left:'$',  right:'$',  display:false}
+      ],
+      ignoredTags: ['script','noscript','style','textarea','pre','code','option'],
+      throwOnError: false
+    });
+  }
+}
+
+function columnAt(depth){ return stack.children[depth] || null; }
+
+function clearOpenIn(depth){
+  const col = columnAt(depth);
+  if (col) col.querySelectorAll('.tok.open').forEach(t => t.classList.remove('open'));
+}
+
+function trimTo(depth){
+  while (stack.children.length > depth + 1) stack.removeChild(stack.lastElementChild);
+  chain = chain.slice(0, depth);
+}
+
+function renderCrumbs(){
+  crumbs.innerHTML = '';
+  chain.forEach((id, i) => {
+    const sep = document.createElement('span');
+    const last = (i === chain.length - 1);
+    sep.className = last ? 'turn' : 'sep';
+    sep.textContent = last ? '⊢' : '·';
+    crumbs.appendChild(sep);
+    const b = document.createElement('button');
+    b.className = 'crumb' + (last ? ' head' : '');
+    b.textContent = (NOTES[id] ? NOTES[id].t : id).toLowerCase();
+    b.addEventListener('click', () => {
+      const c = columnAt(i + 1);
+      if (c) c.scrollIntoView({inline:'end', block:'nearest', behavior: reduce ? 'auto' : 'smooth'});
+    });
+    crumbs.appendChild(b);
+  });
+}
+
+function openNote(id, depth, sourceTok){
+  const note = NOTES[id];
+  if (!note) return;
+
+  if (sourceTok && sourceTok.classList.contains('open')) {   // toggle closed
+    trimTo(depth);
+    sourceTok.classList.remove('open');
+    renderCrumbs();
+    return;
+  }
+
+  trimTo(depth);
+  clearOpenIn(depth);
+  if (sourceTok) sourceTok.classList.add('open');
+  chain.push(id);
+
+  const sec = document.createElement('section');
+  sec.className = 'col note';
+  sec.dataset.depth = String(depth + 1);
+  sec.innerHTML =
+    '<div class="inner">' +
+      '<div class="notehead">' +
+        '<span class="depth">' + String(depth + 1).padStart(2,'0') + '</span>' +
+        '<span class="t"><span class="turnstile">⊢</span>' + note.t + '</span>' +
+        '<button class="closebtn" data-close="1">close</button>' +
+      '</div>' +
+      '<div class="notebody">' + note.h + '</div>' +
+    '</div>';
+  stack.appendChild(sec);
+  typeset(sec);
+  renderCrumbs();
+  requestAnimationFrame(() => {
+    sec.scrollIntoView({inline:'end', block:'nearest', behavior: reduce ? 'auto' : 'smooth'});
+  });
+}
+
+function closeColumn(col){
+  const depth = parseInt(col.dataset.depth || '0', 10);
+  trimTo(depth - 1);
+  clearOpenIn(depth - 1);
+  renderCrumbs();
+  const prev = columnAt(depth - 1);
+  if (prev) prev.scrollIntoView({inline:'end', block:'nearest', behavior: reduce ? 'auto' : 'smooth'});
+}
+
+stack.addEventListener('click', (e) => {
+  const close = e.target.closest('[data-close]');
+  if (close) { closeColumn(close.closest('.col')); return; }
+  const tok = e.target.closest('.tok');
+  if (!tok) return;
+  const col = tok.closest('.col');
+  const depth = col === paper ? 0 : parseInt(col.dataset.depth || '0', 10);
+  openNote(tok.dataset.n, depth, tok);
+});
+
+stack.addEventListener('keydown', (e) => {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('tok')) {
+    e.preventDefault();
+    e.target.click();
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && chain.length) {
+    closeColumn(stack.lastElementChild);
+  }
+});
+
+document.querySelector('#rail .src').addEventListener('click', () => {
+  paper.scrollIntoView({inline:'start', block:'nearest', behavior: reduce ? 'auto' : 'smooth'});
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.tok').forEach(t => {
+    t.setAttribute('tabindex','0');
+    t.setAttribute('role','button');
+  });
+  typeset(paper);
+  const missing = [...document.querySelectorAll('.tok')].map(t => t.dataset.n).filter(n => !NOTES[n]);
+  if (missing.length) console.warn('notes missing:', [...new Set(missing)]);
+});
+</script>
+</body>
+</html>

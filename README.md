@@ -9,6 +9,7 @@ Each reading is a single self-contained HTML file. Open `index.html` for the lis
 index.html                    the list of papers
 llm/kimi-k3/index.html        Kimi K3: Open Frontier Intelligence
 crypto/dylean/index.html      Bob DyLean: Symbolic Analysis of Cryptographic Protocols in Lean
+crypto/poseidon-gsr/index.html From Round Skipping to S-Box Skipping (Poseidon / GSR)
 ```
 
 Adding a paper: make a folder under a topic directory (`llm/`, `crypto/`, …), drop in
